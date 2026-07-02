@@ -1,54 +1,133 @@
-import {DocsService} from '@shared/workspace/DocsService';
-import {DriveServiceHelper} from '@shared/workspace/DriveService';
-import {GmailServiceHelper} from '@shared/workspace/GmailService';
-import {SheetsServiceHelper} from '@shared/workspace/SheetsService';
 import type {AiToolDefinition} from './Types';
+import {
+  appendGoogleDocTextTool,
+  appendSheetRowTool,
+  createCalendarEventTool,
+  createGmailReplyDraftTool,
+  createGoogleDocTool,
+  createQuizFormTool,
+  createSlidesPresentationTool,
+  createSurveyFormTool,
+  createTextDriveFileTool,
+  downloadGmailAttachmentsTool,
+  getGoogleDocContentTool,
+  getSheetValuesTool,
+  putSheetValuesTool,
+  renameDriveFilesTool,
+  searchCalendarEventsTool,
+  searchDriveFilesTool,
+  searchGmailMessagesTool,
+  sendGmailMessageTool
+} from '@shared/tools/index';
 
+/**
+ * Category names exposed by the workspace tool registry.
+ */
+export type WorkspaceToolCategory =
+  | 'calendar'
+  | 'docs'
+  | 'drive'
+  | 'forms'
+  | 'gmail'
+  | 'sheets'
+  | 'slides'
+  | 'all';
+
+/**
+ * Registry that exposes both category-specific and aggregate tool sets.
+ */
 export class WorkspaceToolRegistry {
+  /**
+   * Returns every shared tool currently registered.
+   *
+   * @returns Flat array of all shared tool definitions.
+   */
   all(): AiToolDefinition[] {
     return [
-      {
-        name: 'docs_create_document',
-        description: 'Create a Google Doc with optional starter text.',
-        parameters: {
-          title: 'string',
-          body: 'string'
-        },
-        execute: (args) =>
-          DocsService.createDocument(
-            String(args.title),
-            typeof args.body === 'string' ? args.body : args.body ? JSON.stringify(args.body) : undefined
-          )
-      },
-      {
-        name: 'drive_create_text_file',
-        description: 'Create a text file in Drive.',
-        parameters: {
-          name: 'string',
-          content: 'string'
-        },
-        execute: (args) => DriveServiceHelper.createTextFile(String(args.name), String(args.content))
-      },
-      {
-        name: 'gmail_search',
-        description: 'Search Gmail threads.',
-        parameters: {
-          query: 'string',
-          limit: 'number'
-        },
-        execute: (args) => GmailServiceHelper.search(String(args.query), Number(args.limit ?? 10))
-      },
-      {
-        name: 'sheets_get_values',
-        description: 'Read a rectangular range from a sheet.',
-        parameters: {
-          spreadsheetId: 'string',
-          sheetName: 'string',
-          a1Notation: 'string'
-        },
-        execute: (args) =>
-          SheetsServiceHelper.getValues(String(args.spreadsheetId), String(args.sheetName), String(args.a1Notation))
-      }
+      ...this.calendar(),
+      ...this.docs(),
+      ...this.drive(),
+      ...this.forms(),
+      ...this.gmail(),
+      ...this.sheets(),
+      ...this.slides()
     ];
+  }
+
+  /**
+   * Returns tools for a specific category.
+   *
+   * @param category Logical tool category.
+   * @returns Tools associated with the category.
+   */
+  forCategory(category: WorkspaceToolCategory): AiToolDefinition[] {
+    switch (category) {
+      case 'calendar':
+        return this.calendar();
+      case 'docs':
+        return this.docs();
+      case 'drive':
+        return this.drive();
+      case 'forms':
+        return this.forms();
+      case 'gmail':
+        return this.gmail();
+      case 'sheets':
+        return this.sheets();
+      case 'slides':
+        return this.slides();
+      case 'all':
+      default:
+        return this.all();
+    }
+  }
+
+  /**
+   * Calendar tools.
+   */
+  calendar(): AiToolDefinition[] {
+    return [searchCalendarEventsTool, createCalendarEventTool];
+  }
+
+  /**
+   * Google Docs tools.
+   */
+  docs(): AiToolDefinition[] {
+    return [createGoogleDocTool, getGoogleDocContentTool, appendGoogleDocTextTool];
+  }
+
+  /**
+   * Google Drive tools.
+   */
+  drive(): AiToolDefinition[] {
+    return [createTextDriveFileTool, searchDriveFilesTool, renameDriveFilesTool];
+  }
+
+  /**
+   * Google Forms tools.
+   */
+  forms(): AiToolDefinition[] {
+    return [createSurveyFormTool, createQuizFormTool];
+  }
+
+  /**
+   * Gmail tools.
+   */
+  gmail(): AiToolDefinition[] {
+    return [searchGmailMessagesTool, downloadGmailAttachmentsTool, createGmailReplyDraftTool, sendGmailMessageTool];
+  }
+
+  /**
+   * Google Sheets tools.
+   */
+  sheets(): AiToolDefinition[] {
+    return [getSheetValuesTool, putSheetValuesTool, appendSheetRowTool];
+  }
+
+  /**
+   * Google Slides tools.
+   */
+  slides(): AiToolDefinition[] {
+    return [createSlidesPresentationTool];
   }
 }

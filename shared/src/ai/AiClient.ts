@@ -56,6 +56,28 @@ export class AiClient {
     return parsed;
   }
 
+  /**
+   * Generates a compact execution plan using the repository's standard planner
+   * framing so agentic callers do not have to rebuild the same prompt scaffold.
+   *
+   * @param goal Objective to decompose into observable work.
+   * @param contextLines Supplemental context lines that constrain the plan.
+   * @param tools Optional tool set the model can call while planning.
+   * @returns Provider-generated plan text.
+   */
+  generatePlan(goal: string, contextLines: string[] = [], tools: AiToolDefinition[] = []): string {
+    return this.generateText({
+      systemInstruction: PromptCatalog.agenticPlanner,
+      prompt: [
+        `Goal: ${goal}`,
+        'Context:',
+        ...(contextLines.length ? contextLines.map((line) => `- ${line}`) : ['- No extra context supplied.']),
+        'Return a concise plan with sections for Objective, Steps, Risks, and Completion Signal.'
+      ].join('\n'),
+      tools
+    });
+  }
+
   private invokeOpenAiCompatible(input: GenerateTextInput): string {
     const baseUrl = this.getOpenAiCompatibleBaseUrl();
     const messages: OpenAiMessage[] = [
@@ -80,17 +102,12 @@ export class AiClient {
         function: {
           name: tool.name,
           description: tool.description,
-          parameters: {
-            type: 'object',
-            properties: Object.fromEntries(
-              Object.entries(tool.parameters).map(([key, description]) => [key, {type: 'string', description}])
-            )
-          }
+          parameters: tool.inputSchema
         }
       }));
     }
 
-    for (let iteration = 0; iteration < 5; iteration += 1) {
+    for (let iteration = 0; iteration < (this.options.maxToolIterations ?? 5); iteration += 1) {
       payload.messages = messages;
       const response = HttpClient.requestJson<{
         choices: Array<{

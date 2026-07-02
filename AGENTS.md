@@ -32,11 +32,13 @@ Every project must include:
 ## Shared Library Rules
 
 - Put Google Workspace wrappers in `shared/src/workspace`.
+- Put one reusable tool definition per file in `shared/src/tools/<domain>/` and compose them through `shared/src/ai/ToolRegistry.ts`.
 - Put Cloudflare service integrations in `shared/src/cloudflare`.
 - Prefer routing Apps Script-to-Cloudflare traffic through the `core-gsuite-tools.hacolby.workers.dev` worker bridge when the goal is shared multi-project infrastructure, auth centralization, or generic D1/KV/Vectorize support.
 - Put provider-neutral AI orchestration in `shared/src/ai`.
 - Put prompt bases, reusable planning flows, and knowledge crystallization helpers in `shared/src/agentic`.
 - Prefer extending an existing shared module over creating a near-duplicate.
+- New shared functions should carry detailed JSDoc describing inputs, behavior, and return shapes.
 
 ## AI / Cloudflare Expectations
 
