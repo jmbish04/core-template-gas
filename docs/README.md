@@ -12,4 +12,5 @@ This folder is the operating manual for the repository.
 - [guides/frontend-pattern.md](/Volumes/Projects/workers/core-template-gas/docs/guides/frontend-pattern.md)
 - [reference/shared-ai.md](/Volumes/Projects/workers/core-template-gas/docs/reference/shared-ai.md)
 - [reference/shared-cloudflare.md](/Volumes/Projects/workers/core-template-gas/docs/reference/shared-cloudflare.md)
+- [reference/core-gsuite-tools-worker.md](/Volumes/Projects/workers/core-template-gas/docs/reference/core-gsuite-tools-worker.md)
 - [operations/troubleshooting.md](/Volumes/Projects/workers/core-template-gas/docs/operations/troubleshooting.md)

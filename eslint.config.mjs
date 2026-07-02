@@ -5,7 +5,15 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'retro-ref/**']
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'retro-ref/**',
+      '_build.ts',
+      'main.ts',
+      'main.test.ts',
+      '.vscode/**'
+    ]
   },
   {
     files: ['**/*.ts', '**/*.tsx'],

@@ -10,6 +10,7 @@ This repository is the single source of truth for multiple Google Apps Script pr
 - Shared code lives under `shared/` and is imported by projects instead of duplicated.
 - The project registry in `projects.json` is authoritative.
 - Documentation changes belong in `docs/` instead of expanding the root `README.md` indefinitely.
+- The root symlink `core-gsuite-tools` is the expected local anchor to the sibling Cloudflare Worker repo that exposes Cloudflare and Google Workspace services over REST.
 
 ## Project Contract
 
@@ -32,6 +33,7 @@ Every project must include:
 
 - Put Google Workspace wrappers in `shared/src/workspace`.
 - Put Cloudflare service integrations in `shared/src/cloudflare`.
+- Prefer routing Apps Script-to-Cloudflare traffic through the `core-gsuite-tools.hacolby.workers.dev` worker bridge when the goal is shared multi-project infrastructure, auth centralization, or generic D1/KV/Vectorize support.
 - Put provider-neutral AI orchestration in `shared/src/ai`.
 - Put prompt bases, reusable planning flows, and knowledge crystallization helpers in `shared/src/agentic`.
 - Prefer extending an existing shared module over creating a near-duplicate.
@@ -41,6 +43,7 @@ Every project must include:
 - The shared AI client must continue supporting OpenAI, Anthropic, Gemini, and Workers AI.
 - Cloudflare AI Gateway routing must stay optional and provider-aware.
 - Shared tool execution should remain grounded in Apps Script primitives for Docs, Sheets, Drive, Gmail, and web app flows.
+- If the deployed `core-gsuite-tools` worker does not yet advertise a desired Cloudflare proxy endpoint, preserve the shared client contract and document the gap instead of silently changing Apps Script callers back to raw per-project Cloudflare API calls.
 
 ## Documentation Requirements
 

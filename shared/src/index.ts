@@ -3,6 +3,7 @@ export * from './ai/PromptCatalog';
 export * from './ai/ToolRegistry';
 export * from './cloudflare/AiGateway';
 export * from './cloudflare/CloudflareClient';
+export * from './cloudflare/CoreGsuiteToolsClient';
 export * from './cloudflare/D1';
 export * from './cloudflare/Images';
 export * from './cloudflare/Kv';
