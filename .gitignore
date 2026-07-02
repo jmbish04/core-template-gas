@@ -1,7 +1,12 @@
-#build
 node_modules
-
+dist
+.DS_Store
 *.tsbuildinfo
+.clasp.json
+.clasprc.json
+projects/**/.clasp.json
 
+# local scratch and logs
 \#*\#
 .\#*
+*.log

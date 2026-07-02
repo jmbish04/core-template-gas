@@ -1,0 +1,58 @@
+# AGENTS.md
+
+## Mission
+
+This repository is the single source of truth for multiple Google Apps Script projects. Future agents must preserve that contract.
+
+## Non-Negotiable Structure
+
+- Every deployable script lives under `projects/<project-name>/`.
+- Shared code lives under `shared/` and is imported by projects instead of duplicated.
+- The project registry in `projects.json` is authoritative.
+- Documentation changes belong in `docs/` instead of expanding the root `README.md` indefinitely.
+
+## Project Contract
+
+Every project must include:
+
+- `project.json` if project-specific metadata is needed beyond the root registry
+- `appsscript.json`
+- `src/server/main.ts`
+- `src/client/index.html`
+- `src/client/main.tsx`
+
+## Build And Deploy Rules
+
+- Use the root Node scripts in `scripts/`; do not add ad hoc per-project shell workflows when the shared scripts can be extended.
+- Do not commit live `.clasp.json` credentials.
+- CI/CD assumes clasp secrets are injected from GitHub Actions, primarily through `CLASP_CREDENTIALS_JSON` and `CLASP_PROJECTS_JSON`.
+- If a shared library change impacts runtime behavior, assume all projects are affected unless the impact surface is clearly narrowed in code and docs.
+
+## Shared Library Rules
+
+- Put Google Workspace wrappers in `shared/src/workspace`.
+- Put Cloudflare service integrations in `shared/src/cloudflare`.
+- Put provider-neutral AI orchestration in `shared/src/ai`.
+- Put prompt bases, reusable planning flows, and knowledge crystallization helpers in `shared/src/agentic`.
+- Prefer extending an existing shared module over creating a near-duplicate.
+
+## AI / Cloudflare Expectations
+
+- The shared AI client must continue supporting OpenAI, Anthropic, Gemini, and Workers AI.
+- Cloudflare AI Gateway routing must stay optional and provider-aware.
+- Shared tool execution should remain grounded in Apps Script primitives for Docs, Sheets, Drive, Gmail, and web app flows.
+
+## Documentation Requirements
+
+When adding or changing a project, update:
+
+- `projects.json`
+- relevant `docs/guides/*`
+- relevant `docs/reference/*`
+- the project folder README when behavior changes materially
+
+## CI/CD Requirements
+
+- Pull requests should validate affected projects.
+- Same-repository pull requests may deploy affected projects when secrets exist.
+- Never switch to `pull_request_target` just to access secrets without a clear security review.

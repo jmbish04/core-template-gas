@@ -1,0 +1,198 @@
+import {HttpClient} from '@shared/core/HttpClient';
+import {safeJsonParse} from '@shared/core/Json';
+import {PromptCatalog} from './PromptCatalog';
+import type {AiClientOptions, AiToolDefinition, GenerateTextInput, StructuredField} from './Types';
+
+export class AiClient {
+  constructor(private readonly options: AiClientOptions) {}
+
+  generateText(input: GenerateTextInput): string {
+    switch (this.options.provider) {
+      case 'openai':
+      case 'workers-ai':
+        return this.invokeOpenAiCompatible(input);
+      case 'anthropic':
+        return this.invokeAnthropic(input);
+      case 'gemini':
+        return this.invokeGemini(input);
+      default:
+        throw new Error(`Unsupported provider: ${String(this.options.provider)}`);
+    }
+  }
+
+  generateStructuredResponse(prompt: string, fields: StructuredField[], tools: AiToolDefinition[] = []): Record<string, unknown> {
+    const schemaInstructions = fields
+      .map((field) => `- ${field.name}${field.required ? ' (required)' : ''}: ${field.description}`)
+      .join('\n');
+    const response = this.generateText({
+      prompt: `${prompt}\n\nReturn valid JSON with these fields:\n${schemaInstructions}`,
+      tools,
+      systemInstruction: PromptCatalog.workspaceOperator
+    });
+
+    const parsed = safeJsonParse<Record<string, unknown>>(response);
+    for (const field of fields.filter((candidate) => candidate.required)) {
+      if (!(field.name in parsed)) {
+        throw new Error(`Structured response is missing required field "${field.name}".`);
+      }
+    }
+
+    return parsed;
+  }
+
+  private invokeOpenAiCompatible(input: GenerateTextInput): string {
+    const baseUrl =
+      this.options.gatewayBaseUrl ??
+      (this.options.provider === 'workers-ai'
+        ? 'https://api.openai.com/client/v4/accounts/workers-ai/v1'
+        : 'https://api.openai.com/v1');
+    const payload: Record<string, unknown> = {
+      model: this.options.model,
+      temperature: input.temperature ?? 0.2,
+      messages: [
+        {
+          role: 'system',
+          content: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
+        },
+        {
+          role: 'user',
+          content: input.prompt
+        }
+      ]
+    };
+
+    if (input.tools?.length) {
+      payload.tools = input.tools.map((tool) => ({
+        type: 'function',
+        function: {
+          name: tool.name,
+          description: tool.description,
+          parameters: {
+            type: 'object',
+            properties: Object.fromEntries(
+              Object.entries(tool.parameters).map(([key, description]) => [key, {type: 'string', description}])
+            )
+          }
+        }
+      }));
+    }
+
+    const response = HttpClient.requestJson<{
+      choices: Array<{
+        message: {
+          content?: string;
+          tool_calls?: Array<{function: {name: string; arguments: string}}>;
+        };
+      }>;
+    }>(`${baseUrl}/chat/completions`, {
+      method: 'post',
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`
+      },
+      payload: JSON.stringify(payload)
+    });
+
+    const message = response.choices[0]?.message;
+    if (message?.content) {
+      return message.content;
+    }
+
+    if (message?.tool_calls?.length && input.tools?.length) {
+      const outputs = message.tool_calls.map((call) => {
+        const tool = input.tools?.find((candidate) => candidate.name === call.function.name);
+        if (!tool) {
+          throw new Error(`Unknown tool requested by model: ${call.function.name}`);
+        }
+
+        const toolArgs = safeJsonParse<Record<string, unknown>>(call.function.arguments);
+        return {
+          name: tool.name,
+          output: tool.execute(toolArgs)
+        };
+      });
+
+      return JSON.stringify(outputs, null, 2);
+    }
+
+    return '';
+  }
+
+  private invokeAnthropic(input: GenerateTextInput): string {
+    const baseUrl = this.options.gatewayBaseUrl ?? 'https://api.anthropic.com/v1';
+    const response = HttpClient.requestJson<{
+      content: Array<{type: string; text?: string}>;
+    }>(`${baseUrl}/messages`, {
+      method: 'post',
+      headers: {
+        'x-api-key': this.options.apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      payload: JSON.stringify({
+        model: this.options.model,
+        max_tokens: 2048,
+        system: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.agenticPlanner,
+        messages: [{role: 'user', content: input.prompt}]
+      })
+    });
+
+    return response.content.find((part) => part.type === 'text')?.text ?? '';
+  }
+
+  private invokeGemini(input: GenerateTextInput): string {
+    if (this.options.gatewayBaseUrl) {
+      const response = HttpClient.requestJson<{
+        choices: Array<{message: {content: string}}>;
+      }>(`${this.options.gatewayBaseUrl}/chat/completions`, {
+        method: 'post',
+        headers: {
+          Authorization: `Bearer ${this.options.apiKey}`
+        },
+        payload: JSON.stringify({
+          model: this.options.model,
+          messages: [
+            {
+              role: 'system',
+              content: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
+            },
+            {
+              role: 'user',
+              content: input.prompt
+            }
+          ]
+        })
+      });
+
+      return response.choices[0]?.message.content ?? '';
+    }
+
+    const response = HttpClient.requestJson<{
+      candidates: Array<{
+        content?: {
+          parts?: Array<{text?: string}>;
+        };
+      }>;
+    }>(`https://generativelanguage.googleapis.com/v1beta/models/${this.options.model}:generateContent?key=${encodeURIComponent(this.options.apiKey)}`, {
+      method: 'post',
+      payload: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
+            }
+          ]
+        },
+        contents: [
+          {
+            parts: [
+              {
+                text: input.prompt
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    return response.candidates[0]?.content?.parts?.map((part) => part.text ?? '').join('\n') ?? '';
+  }
+}
