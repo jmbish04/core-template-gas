@@ -11,6 +11,7 @@ export interface AiClientOptions {
   provider: AiProvider;
   apiKey: string;
   model: string;
+  accountId?: string;
   gatewayBaseUrl?: string;
   defaultSystemInstruction?: string;
 }

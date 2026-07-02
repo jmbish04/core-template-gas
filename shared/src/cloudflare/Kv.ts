@@ -4,7 +4,7 @@ export class KvClient {
   constructor(private readonly client: CloudflareClient, private readonly namespaceId: string) {}
 
   get(key: string): string {
-    return this.client.request<string>(
+    return this.client.requestRaw(
       `/accounts/${this.client.accountId}/storage/kv/namespaces/${this.namespaceId}/values/${encodeURIComponent(key)}`
     );
   }

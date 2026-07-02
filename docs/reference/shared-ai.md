@@ -19,6 +19,8 @@ The AI layer is in [shared/src/ai](/Volumes/Projects/workers/core-template-gas/s
 
 Set `AI_GATEWAY_BASE_URL` in Script Properties to route provider requests through Cloudflare AI Gateway instead of a provider-native URL.
 
+When `AI_PROVIDER=workers-ai` and `AI_GATEWAY_BASE_URL` is not set, also set `CLOUDFLARE_ACCOUNT_ID` so the shared client can target the native Workers AI endpoint correctly.
+
 ## Built-In Tooling
 
 The workspace tool registry currently exposes functions for:

@@ -1,6 +1,11 @@
 export function safeJsonParse<T>(value: string): T {
   try {
-    return JSON.parse(value) as T;
+    let cleaned = value.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```[a-zA-Z0-9_-]*\s*/, '').replace(/\s*```$/, '');
+    }
+
+    return JSON.parse(cleaned) as T;
   } catch (error) {
     throw new Error(`Expected valid JSON but received: ${value.slice(0, 200)}; cause=${String(error)}`);
   }

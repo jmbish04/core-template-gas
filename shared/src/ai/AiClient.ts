@@ -3,6 +3,22 @@ import {safeJsonParse} from '@shared/core/Json';
 import {PromptCatalog} from './PromptCatalog';
 import type {AiClientOptions, AiToolDefinition, GenerateTextInput, StructuredField} from './Types';
 
+interface OpenAiToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+interface OpenAiMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string;
+  tool_calls?: OpenAiToolCall[];
+  tool_call_id?: string;
+}
+
 export class AiClient {
   constructor(private readonly options: AiClientOptions) {}
 
@@ -41,24 +57,21 @@ export class AiClient {
   }
 
   private invokeOpenAiCompatible(input: GenerateTextInput): string {
-    const baseUrl =
-      this.options.gatewayBaseUrl ??
-      (this.options.provider === 'workers-ai'
-        ? 'https://api.openai.com/client/v4/accounts/workers-ai/v1'
-        : 'https://api.openai.com/v1');
+    const baseUrl = this.getOpenAiCompatibleBaseUrl();
+    const messages: OpenAiMessage[] = [
+      {
+        role: 'system',
+        content: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
+      },
+      {
+        role: 'user',
+        content: input.prompt
+      }
+    ];
     const payload: Record<string, unknown> = {
       model: this.options.model,
       temperature: input.temperature ?? 0.2,
-      messages: [
-        {
-          role: 'system',
-          content: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
-        },
-        {
-          role: 'user',
-          content: input.prompt
-        }
-      ]
+      messages
     };
 
     if (input.tools?.length) {
@@ -77,44 +90,57 @@ export class AiClient {
       }));
     }
 
-    const response = HttpClient.requestJson<{
-      choices: Array<{
-        message: {
-          content?: string;
-          tool_calls?: Array<{function: {name: string; arguments: string}}>;
-        };
-      }>;
-    }>(`${baseUrl}/chat/completions`, {
-      method: 'post',
-      headers: {
-        Authorization: `Bearer ${this.options.apiKey}`
-      },
-      payload: JSON.stringify(payload)
-    });
-
-    const message = response.choices[0]?.message;
-    if (message?.content) {
-      return message.content;
-    }
-
-    if (message?.tool_calls?.length && input.tools?.length) {
-      const outputs = message.tool_calls.map((call) => {
-        const tool = input.tools?.find((candidate) => candidate.name === call.function.name);
-        if (!tool) {
-          throw new Error(`Unknown tool requested by model: ${call.function.name}`);
-        }
-
-        const toolArgs = safeJsonParse<Record<string, unknown>>(call.function.arguments);
-        return {
-          name: tool.name,
-          output: tool.execute(toolArgs)
-        };
+    for (let iteration = 0; iteration < 5; iteration += 1) {
+      payload.messages = messages;
+      const response = HttpClient.requestJson<{
+        choices: Array<{
+          message: {
+            content?: string;
+            tool_calls?: OpenAiToolCall[];
+          };
+        }>;
+      }>(`${baseUrl}/chat/completions`, {
+        method: 'post',
+        headers: {
+          Authorization: `Bearer ${this.options.apiKey}`
+        },
+        payload: JSON.stringify(payload)
       });
 
-      return JSON.stringify(outputs, null, 2);
+      const message = response.choices[0]?.message;
+      if (!message) {
+        return '';
+      }
+
+      if (message.tool_calls?.length && input.tools?.length) {
+        messages.push({
+          role: 'assistant',
+          content: message.content ?? '',
+          tool_calls: message.tool_calls
+        });
+
+        for (const call of message.tool_calls) {
+          const tool = input.tools.find((candidate) => candidate.name === call.function.name);
+          if (!tool) {
+            throw new Error(`Unknown tool requested by model: ${call.function.name}`);
+          }
+
+          const toolArgs = safeJsonParse<Record<string, unknown>>(call.function.arguments);
+          const output = tool.execute(toolArgs);
+          messages.push({
+            role: 'tool',
+            tool_call_id: call.id,
+            content: typeof output === 'string' ? output : JSON.stringify(output)
+          });
+        }
+
+        continue;
+      }
+
+      return message.content ?? '';
     }
 
-    return '';
+    throw new Error('Tool-calling loop exceeded the maximum number of iterations.');
   }
 
   private invokeAnthropic(input: GenerateTextInput): string {
@@ -194,5 +220,21 @@ export class AiClient {
     });
 
     return response.candidates[0]?.content?.parts?.map((part) => part.text ?? '').join('\n') ?? '';
+  }
+
+  private getOpenAiCompatibleBaseUrl(): string {
+    if (this.options.gatewayBaseUrl) {
+      return this.options.gatewayBaseUrl;
+    }
+
+    if (this.options.provider === 'workers-ai') {
+      if (!this.options.accountId) {
+        throw new Error('Workers AI requests require accountId when AI_GATEWAY_BASE_URL is not configured.');
+      }
+
+      return `https://api.cloudflare.com/client/v4/accounts/${this.options.accountId}/ai/v1`;
+    }
+
+    return 'https://api.openai.com/v1';
   }
 }

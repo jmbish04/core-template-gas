@@ -1,7 +1,15 @@
 import {AiClient} from '@shared/ai/AiClient';
 import {PromptCatalog} from '@shared/ai/PromptCatalog';
 import {WorkspaceToolRegistry} from '@shared/ai/ToolRegistry';
+import type {AiProvider} from '@shared/ai/Types';
 import {getOptionalScriptProperty, getRequiredScriptProperty} from '@shared/core/Properties';
+
+const DEFAULT_MODEL_BY_PROVIDER: Record<AiProvider, string> = {
+  openai: 'gpt-4.1-mini',
+  anthropic: 'claude-3-5-sonnet-latest',
+  gemini: 'gemini-2.5-pro',
+  'workers-ai': '@cf/meta/llama-3.1-8b-instruct'
+};
 
 function showAppSidebar(): void {
   const html = HtmlService.createHtmlOutputFromFile('Index').setTitle('Workspace Admin');
@@ -29,15 +37,17 @@ function getBootstrapState() {
 }
 
 function runWorkspaceAgent(prompt: string): string {
-  const provider = getOptionalScriptProperty('AI_PROVIDER', 'openai') as 'openai' | 'anthropic' | 'gemini' | 'workers-ai';
-  const model = getOptionalScriptProperty('AI_MODEL', provider === 'gemini' ? 'gemini-2.5-pro' : 'gpt-4.1-mini');
+  const provider = getOptionalScriptProperty('AI_PROVIDER', 'openai') as AiProvider;
+  const model = getOptionalScriptProperty('AI_MODEL', DEFAULT_MODEL_BY_PROVIDER[provider]);
   const apiKey = getRequiredScriptProperty('AI_API_KEY');
+  const accountId = getOptionalScriptProperty('CLOUDFLARE_ACCOUNT_ID', '');
   const gatewayBaseUrl = getOptionalScriptProperty('AI_GATEWAY_BASE_URL', '');
 
   const client = new AiClient({
     provider,
     model,
     apiKey,
+    accountId: accountId || undefined,
     gatewayBaseUrl: gatewayBaseUrl || undefined,
     defaultSystemInstruction: `${PromptCatalog.workspaceOperator} ${PromptCatalog.cloudflareOperator}`
   });
