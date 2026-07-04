@@ -18,8 +18,7 @@
       "clientEntry": "src/client/main.tsx",
       "clientHtml": "src/client/index.html",
       "manifest": "appsscript.json",
-      "secretKey": "workspace-admin",
-      "deployMode": "push"
+      "secretKey": "workspace-admin"
     },
     {
       "name": "deep-research-companion",
@@ -29,8 +28,7 @@
       "clientEntry": "src/client/main.tsx",
       "clientHtml": "src/client/index.html",
       "manifest": "appsscript.json",
-      "secretKey": "deep-research-companion",
-      "deployMode": "push"
+      "secretKey": "deep-research-companion"
     }
   ]
 }

@@ -33,6 +33,7 @@ async function main() {
         timeZone: 'America/Los_Angeles',
         runtimeVersion: 'V8',
         exceptionLogging: 'STACKDRIVER',
+        oauthScopes: [],
         webapp: {
           access: 'ANYONE',
           executeAs: 'USER_DEPLOYING'

@@ -1,38 +1,14 @@
 import fs from 'node:fs/promises';
-import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {build} from 'esbuild';
+import {buildNormalizedManifest, sharedAliasPlugin} from './lib/appsscript-manifest.mjs';
 import {
   fileExists,
   getDistRoot,
   getProjectByName,
   getProjectRoot,
-  parseArgs,
-  repoRoot
+  parseArgs
 } from './lib/projects.mjs';
-
-function sharedAliasPlugin() {
-  const resolveAliasTarget = (relativePath) => {
-    const basePath = path.join(repoRoot, 'shared', 'src', relativePath);
-    const candidates = [basePath, `${basePath}.ts`, `${basePath}.tsx`, path.join(basePath, 'index.ts')];
-    const resolved = candidates.find((candidate) => existsSync(candidate));
-
-    if (!resolved) {
-      throw new Error(`Unable to resolve @shared/${relativePath}`);
-    }
-
-    return resolved;
-  };
-
-  return {
-    name: 'shared-alias',
-    setup(buildApi) {
-      buildApi.onResolve({filter: /^@shared\//}, (args) => ({
-        path: resolveAliasTarget(args.path.slice('@shared/'.length))
-      }));
-    }
-  };
-}
 
 async function ensureProjectFiles(project) {
   const projectRoot = getProjectRoot(project);
@@ -115,14 +91,15 @@ async function buildServer(project) {
   };
   const header = `/** Generated for ${project.name}. Do not edit dist directly. */\n`;
   const injectedRuntimeConfig = `const __PROJECT_RUNTIME_CONFIG__ = Object.freeze(${JSON.stringify(runtimeConfig)});\n`;
-  await fs.writeFile(path.join(distRoot, 'Code.js'), `${header}${injectedRuntimeConfig}${output.text}`);
+  const serverBundleSource = output.text;
+  await fs.writeFile(path.join(distRoot, 'Code.js'), `${header}${injectedRuntimeConfig}${serverBundleSource}`);
+  return serverBundleSource;
 }
 
-async function copyManifest(project) {
-  const projectRoot = getProjectRoot(project);
+async function writeManifest(project, serverBundleSource) {
   const distRoot = getDistRoot(project);
-
-  await fs.copyFile(path.join(projectRoot, project.manifest), path.join(distRoot, 'appsscript.json'));
+  const manifest = await buildNormalizedManifest(project, {bundleSource: serverBundleSource});
+  await fs.writeFile(path.join(distRoot, 'appsscript.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await fs.writeFile(
     path.join(distRoot, '.claspignore'),
     ['**/*', '!appsscript.json', '!Code.js', '!Index.html'].join('\n')
@@ -138,8 +115,8 @@ export async function buildProject(projectName) {
   await fs.mkdir(distRoot, {recursive: true});
 
   await buildClient(project);
-  await buildServer(project);
-  await copyManifest(project);
+  const serverBundleSource = await buildServer(project);
+  await writeManifest(project, serverBundleSource);
 
   return distRoot;
 }

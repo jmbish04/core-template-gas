@@ -89,7 +89,9 @@ export function getProjectSecret(project) {
   return {
     scriptId: process.env[`CLASP_SCRIPT_ID_${envBase}`],
     parentId: process.env[`CLASP_PARENT_ID_${envBase}`],
-    deploymentId: process.env[`CLASP_DEPLOYMENT_ID_${envBase}`]
+    deploymentId:
+      process.env[`CLASP_DEPLOYMENT_ID_${envBase}`] ??
+      process.env[`CLASP_ACTIVE_DEPLOYMENT_ID_${envBase}`]
   };
 }
 

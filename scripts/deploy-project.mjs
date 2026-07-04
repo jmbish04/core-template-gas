@@ -3,6 +3,11 @@ import path from 'node:path';
 import {buildProject} from './build-project.mjs';
 import {getDistRoot, getProjectByName, getProjectSecret, parseArgs, run} from './lib/projects.mjs';
 
+function parseVersionNumber(stdout) {
+  const match = stdout.match(/Created version (\d+)/);
+  return match?.[1];
+}
+
 async function writeClaspConfig(project) {
   const secret = getProjectSecret(project);
   if (!secret?.scriptId) {
@@ -36,14 +41,19 @@ export async function deployProject(projectName) {
     cwd: distRoot
   });
 
-  if (project.deployMode === 'versioned' && secret.deploymentId) {
+  if (secret.deploymentId) {
     const timestamp = new Date().toISOString();
-    await run('npx', ['clasp', 'version', `Automated deploy ${timestamp}`], {
+    const versionResult = await run('npx', ['clasp', 'version', `Automated deploy ${timestamp}`], {
       cwd: distRoot
     });
-    await run('npx', ['clasp', 'deploy', '--deploymentId', secret.deploymentId, '--description', `PR deploy ${timestamp}`], {
-      cwd: distRoot
-    });
+    const versionNumber = parseVersionNumber(versionResult.stdout);
+    const deployArgs = ['clasp', 'deploy', '--deploymentId', secret.deploymentId, '--description', `Automated deploy ${timestamp}`];
+
+    if (versionNumber) {
+      deployArgs.push('--versionNumber', versionNumber);
+    }
+
+    await run('npx', deployArgs, {cwd: distRoot});
   }
 }
 

@@ -21,6 +21,8 @@ This repo has two workflow layers.
 - `CLASP_PROJECTS_JSON`: per-project script metadata
 - `CLOUDFLARE_ACCOUNT_ID`: injected into generated Apps Script server bundles before `clasp push`
 
+`CLASP_PROJECTS_JSON` should include each project's existing active `deploymentId` whenever the script already has a live web app, add-on, or execution API deployment that must keep the same URL.
+
 ## Local Secret Sync
 
 Use [`scripts/update-clasp-github-secret.sh`](/Volumes/Projects/workers/core-template-gas/scripts/update-clasp-github-secret.sh) to refresh `CLASP_CREDENTIALS_JSON` from your local `clasp` login:
@@ -42,6 +44,12 @@ The script:
 - Draft PRs do not deploy.
 - The workflow uses `pull_request`, not `pull_request_target`.
 
-## Optional Versioned Deploys
+## Stable Deployment Updates
 
-If a project entry uses `"deployMode": "versioned"` and its secret payload includes `deploymentId`, the deploy script will run `clasp version` and `clasp deploy` after `clasp push`.
+If a project's secret payload includes `deploymentId`, the deploy script will:
+
+- `clasp push` the latest code
+- `clasp version` to create a new immutable revision
+- `clasp deploy --deploymentId <existing-id> --versionNumber <new-version>` so the existing deployment URL stays unchanged
+
+If no `deploymentId` is configured, the workflow stops after `clasp push`.

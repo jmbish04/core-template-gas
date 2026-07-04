@@ -12,7 +12,12 @@ The root [projects.json](/Volumes/Projects/workers/core-template-gas/projects.js
 - `clientHtml`: HTML shell for the client bundle
 - `manifest`: `appsscript.json` path
 - `secretKey`: key used inside `CLASP_PROJECTS_JSON`
-- `deployMode`: `push` or `versioned`
+
+Manifest policy is enforced centrally by the build and validation scripts:
+
+- `timeZone` must always be `America/Los_Angeles`
+- `oauthScopes` must explicitly match the bundled Apps Script services used by the project server code
+- optional additive scopes belong in `projects/<project-name>/project.json` under `manifest.additionalOauthScopes`
 
 ## Root Impact Paths
 
@@ -29,3 +34,5 @@ The root [projects.json](/Volumes/Projects/workers/core-template-gas/projects.js
   }
 }
 ```
+
+When `deploymentId` is present, deploy automation updates that same active deployment instead of creating a new one, preserving the production URL.

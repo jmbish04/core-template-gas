@@ -29,6 +29,9 @@ Every project must include:
 - Do not commit live `.clasp.json` credentials.
 - CI/CD assumes clasp secrets are injected from GitHub Actions, primarily through `CLASP_CREDENTIALS_JSON` and `CLASP_PROJECTS_JSON`.
 - Use `scripts/update-clasp-github-secret.sh` to push local `clasp` credentials into the GitHub `CLASP_CREDENTIALS_JSON` secret when rotating or refreshing auth.
+- Every `appsscript.json` must keep `timeZone` set to `America/Los_Angeles`.
+- Every `appsscript.json` must declare explicit `oauthScopes` that match the Apps Script services the bundled server code actually uses. At minimum, verify `DocumentApp` and `Docs` imply Docs scope, `SpreadsheetApp` implies Sheets scope, `DriveApp` implies Drive scope, `Session.getActiveUser().getEmail()` implies `userinfo.email`, `UrlFetchApp` implies `script.external_request`, `PropertiesService` implies `script.storage`, `ScriptApp` implies `script.scriptapp`, UI methods imply `script.container.ui`, `MailApp` implies `script.send_mail`, and `GmailApp` implies Gmail scope.
+- If a project has a live deployment ID, deployment automation must update that same deployment ID instead of creating a replacement deployment so web app or add-on URLs remain stable.
 - If a shared library change impacts runtime behavior, assume all projects are affected unless the impact surface is clearly narrowed in code and docs.
 
 ## Shared Library Rules
