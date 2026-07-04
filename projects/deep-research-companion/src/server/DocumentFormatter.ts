@@ -1,3 +1,4 @@
+import {DocsService} from '@shared/workspace/DocsService';
 import type {DocumentProcessResult} from './types';
 
 const PLAIN_TEXT_MIME = 'text/plain';
@@ -101,24 +102,24 @@ export class DocumentFormatter {
         let updateAttrs = false;
 
         if (heading === DocumentApp.ParagraphHeading.HEADING1) {
-          paragraphText.setForegroundColor('#1155cc');
+          DocsService.setParagraphTextColor(paragraph, '#1155cc');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           if (index > 0) {
             attrs.PAGE_BREAK_BEFORE = true;
             updateAttrs = true;
           }
         } else if (heading === DocumentApp.ParagraphHeading.HEADING2) {
-          paragraphText.setForegroundColor('#674ea7');
+          DocsService.setParagraphTextColor(paragraph, '#674ea7');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           if (index > 0) {
             attrs.PAGE_BREAK_BEFORE = true;
             updateAttrs = true;
           }
         } else if (heading === DocumentApp.ParagraphHeading.HEADING3) {
-          paragraphText.setForegroundColor('#38761d');
+          DocsService.setParagraphTextColor(paragraph, '#38761d');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         } else if (heading === DocumentApp.ParagraphHeading.HEADING4) {
-          paragraphText.setForegroundColor('#134f5c');
+          DocsService.setParagraphTextColor(paragraph, '#134f5c');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         } else if (heading === DocumentApp.ParagraphHeading.NORMAL) {
           const lowerText = text.toLowerCase();
@@ -284,9 +285,7 @@ export class DocumentFormatter {
    * @returns The normalized heading text.
    */
   private normalizeTopHeading(paragraph: GoogleAppsScript.Document.Paragraph, text: string): string {
-    const parts = text.split(/\s*[:;]\s*/u).map((part) => part.trim()).filter(Boolean);
-    const selected = parts.length > 1 ? parts[parts.length - 1] : text;
-    const normalized = selected.replace(/^[A-Za-z]\s+/u, '').trim();
+    const normalized = DocsService.simplifyGeneratedHeadingText(text);
 
     if (normalized && normalized !== text) {
       paragraph.editAsText().setText(normalized);

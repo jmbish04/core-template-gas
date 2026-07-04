@@ -53,6 +53,11 @@ export interface DocumentReplaceTextOptions extends DocumentReference {
 }
 
 /**
+ * Advanced document structure returned by the Google Docs API.
+ */
+export type StructuredGoogleDocument = GoogleAppsScript.Docs.Schema.Document;
+
+/**
  * Centralized Google Docs service.
  *
  * Best practices intentionally baked into this class:
@@ -205,5 +210,193 @@ export class DocsService {
       title: document.getName(),
       url: document.getUrl()
     };
+  }
+
+  /**
+   * Returns the advanced Google Docs API representation of a document.
+   *
+   * Callers that need structured paragraphs, tables, and rich inline text
+   * should use this helper instead of calling `Docs.Documents.get` directly.
+   *
+   * @param reference Document locator.
+   * @returns Full Docs API document payload.
+   */
+  static getStructuredDocument(reference: DocumentReference): StructuredGoogleDocument {
+    const document = this.openDocument(reference);
+    return Docs!.Documents.get(document.getId()) as StructuredGoogleDocument;
+  }
+
+  /**
+   * Reads a document as deterministic markdown generated from the structured
+   * Docs API payload.
+   *
+   * This is preferable to the export endpoint when a workflow needs stable
+   * markdown across headings, bullet lists, tables, and inline emphasis
+   * without depending on Google's export formatting quirks.
+   *
+   * @param reference Document locator.
+   * @returns Markdown representation of the document body.
+   */
+  static readStructuredMarkdown(reference: DocumentReference): string {
+    const document = this.getStructuredDocument(reference);
+    const content = document.body?.content ?? [];
+    const blocks: string[] = [];
+
+    for (const element of content) {
+      if (element.paragraph) {
+        const block = this.serializeParagraphToMarkdown(element.paragraph);
+        if (block) {
+          blocks.push(block);
+        }
+      } else if (element.table) {
+        const block = this.serializeTableToMarkdown(element.table);
+        if (block) {
+          blocks.push(block);
+        }
+      }
+    }
+
+    return blocks.filter(Boolean).join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  /**
+   * Applies a text foreground color to an entire paragraph.
+   *
+   * Google Apps Script exposes text coloring on the editable text facade, not
+   * directly on `Paragraph`. Centralizing the call here keeps project code from
+   * re-learning that runtime edge case.
+   *
+   * @param paragraph Target paragraph.
+   * @param color Hex color string.
+   */
+  static setParagraphTextColor(paragraph: GoogleAppsScript.Document.Paragraph, color: string): void {
+    paragraph.editAsText().setForegroundColor(color);
+  }
+
+  /**
+   * Simplifies Gemini-generated section titles by keeping the rightmost
+   * segment after a colon or semicolon and stripping a leading one-letter word.
+   *
+   * @param text Raw heading text.
+   * @returns Normalized heading text.
+   */
+  static simplifyGeneratedHeadingText(text: string): string {
+    const parts = text.split(/\s*[:;]\s*/u).map((part) => part.trim()).filter(Boolean);
+    const selected = parts.length > 1 ? parts[parts.length - 1] : text;
+    return selected.replace(/^[A-Za-z]\s+/u, '').trim();
+  }
+
+  /**
+   * Serializes a Docs API paragraph into markdown.
+   *
+   * @param paragraph Structured paragraph node.
+   * @returns Markdown block, or an empty string for non-text nodes.
+   */
+  private static serializeParagraphToMarkdown(paragraph: GoogleAppsScript.Docs.Schema.Paragraph): string {
+    const text = this.serializeParagraphElements(paragraph.elements ?? []);
+    if (!text) {
+      return '';
+    }
+
+    if (paragraph.bullet) {
+      return `- ${text}`;
+    }
+
+    switch (paragraph.paragraphStyle?.namedStyleType ?? 'NORMAL_TEXT') {
+      case 'TITLE':
+      case 'HEADING_1':
+        return `# ${text}`;
+      case 'SUBTITLE':
+        return `> ${text}`;
+      case 'HEADING_2':
+        return `## ${text}`;
+      case 'HEADING_3':
+        return `### ${text}`;
+      case 'HEADING_4':
+        return `#### ${text}`;
+      case 'HEADING_5':
+        return `##### ${text}`;
+      case 'HEADING_6':
+        return `###### ${text}`;
+      default:
+        return text;
+    }
+  }
+
+  /**
+   * Serializes a Docs API table into markdown.
+   *
+   * @param table Structured table node.
+   * @returns Markdown table string.
+   */
+  private static serializeTableToMarkdown(table: GoogleAppsScript.Docs.Schema.Table): string {
+    const rows = table.tableRows ?? [];
+    if (rows.length === 0) {
+      return '';
+    }
+
+    const serializedRows = rows.map((row) =>
+      (row.tableCells ?? []).map((cell) => {
+        const parts: string[] = [];
+        for (const element of cell.content ?? []) {
+          if (element.paragraph) {
+            const value = this.serializeParagraphToMarkdown(element.paragraph).replace(/^#+\s+/u, '');
+            if (value) {
+              parts.push(value);
+            }
+          }
+        }
+
+        return parts.join(' ').replace(/\|/g, '\\|').trim();
+      })
+    );
+
+    const header = serializedRows[0];
+    const divider = header.map(() => '---');
+    return [
+      `| ${header.join(' | ')} |`,
+      `| ${divider.join(' | ')} |`,
+      ...serializedRows.slice(1).map((row) => `| ${row.join(' | ')} |`)
+    ].join('\n');
+  }
+
+  /**
+   * Serializes inline paragraph elements into markdown-aware text.
+   *
+   * @param elements Docs API paragraph elements.
+   * @returns Concatenated inline markdown.
+   */
+  private static serializeParagraphElements(elements: GoogleAppsScript.Docs.Schema.ParagraphElement[]): string {
+    const parts: string[] = [];
+
+    for (const element of elements) {
+      const textRun = element.textRun;
+      if (!textRun?.content) {
+        continue;
+      }
+
+      const text = textRun.content.replace(/\n/g, '');
+      if (!text) {
+        continue;
+      }
+
+      let output = text;
+      if (textRun.textStyle?.link?.url) {
+        output = `[${output}](${textRun.textStyle.link.url})`;
+      }
+      if (textRun.textStyle?.weightedFontFamily?.fontFamily === 'Courier New') {
+        output = `\`${output}\``;
+      }
+      if (textRun.textStyle?.bold) {
+        output = `**${output}**`;
+      }
+      if (textRun.textStyle?.italic) {
+        output = `*${output}*`;
+      }
+
+      parts.push(output);
+    }
+
+    return parts.join('').trim();
   }
 }

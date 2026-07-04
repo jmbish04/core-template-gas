@@ -1,3 +1,4 @@
+import {SheetsServiceHelper} from '@shared/workspace/SheetsService';
 import type {ProcessedAssetRecord, ResearchAssetType} from './types';
 
 /**
@@ -43,22 +44,25 @@ export class TrackingSheetRepository {
     }
 
     if (shouldCreate || !spreadsheet) {
-      spreadsheet = SpreadsheetApp.create('Gemini Deep Research - Format Logs');
-      const spreadsheetFile = DriveApp.getFileById(spreadsheet.getId());
-      spreadsheetFile.moveTo(DriveApp.getFolderById(this.targetFolderId));
+      spreadsheet = SheetsServiceHelper.createSpreadsheetInFolder(
+        'Gemini Deep Research - Format Logs',
+        this.targetFolderId
+      );
 
-      const sheet = this.getPrimarySheet(spreadsheet);
+      const sheet = SheetsServiceHelper.getPrimarySheet(spreadsheet);
       sheet.appendRow(['Document ID', 'Title', 'URL', 'Type', 'Date Created', 'Date Processed', 'Log File URL']);
       sheet.getRange('A1:G1').setFontWeight('bold').setBackground('#f3f3f3');
       sheet.setFrozenRows(1);
-      sheet.setColumnWidth(2, 250);
-      sheet.setColumnWidth(3, 300);
-      sheet.setColumnWidth(7, 300);
+      SheetsServiceHelper.setColumnWidths({spreadsheetId: spreadsheet.getId(), sheetIndex: 0}, {
+        2: 250,
+        3: 300,
+        7: 300
+      });
       props.setProperty(this.trackingSheetPropertyName, spreadsheet.getId());
       return spreadsheet;
     }
 
-    this.ensureColumns(this.getPrimarySheet(spreadsheet));
+    this.ensureColumns(SheetsServiceHelper.getPrimarySheet(spreadsheet));
     return spreadsheet;
   }
 
@@ -68,7 +72,7 @@ export class TrackingSheetRepository {
    * @returns The first worksheet in the tracking spreadsheet.
    */
   getSheet(): GoogleAppsScript.Spreadsheet.Sheet {
-    return this.getPrimarySheet(this.getOrCreateSpreadsheet());
+    return SheetsServiceHelper.getPrimarySheet(this.getOrCreateSpreadsheet());
   }
 
   /**
@@ -77,7 +81,7 @@ export class TrackingSheetRepository {
    * @returns A set keyed by Drive file ID for duplicate detection.
    */
   getProcessedIds(): Set<string> {
-    const values = this.getSheet().getDataRange().getValues();
+    const values = SheetsServiceHelper.getDataRows({spreadsheetId: this.getOrCreateSpreadsheet().getId()}, 1);
     const processedIds = new Set<string>();
 
     for (let index = 1; index < values.length; index += 1) {
@@ -118,7 +122,7 @@ export class TrackingSheetRepository {
    * @returns Candidate report records sorted by proximity.
    */
   findNearbyReports(createdAt: Date, maxAgeMs = 1000 * 60 * 60 * 24 * 3): ProcessedAssetRecord[] {
-    const values = this.getSheet().getDataRange().getValues();
+    const values = SheetsServiceHelper.getDataRows({spreadsheetId: this.getOrCreateSpreadsheet().getId()}, 1);
     const matches: ProcessedAssetRecord[] = [];
 
     for (let index = 1; index < values.length; index += 1) {
@@ -183,24 +187,6 @@ export class TrackingSheetRepository {
       sheet.getRange('G1').setValue('Log File URL').setFontWeight('bold').setBackground('#f3f3f3');
       sheet.setColumnWidth(7, 300);
     }
-  }
-
-  /**
-   * Returns the spreadsheet's primary worksheet using position rather than a
-   * hard-coded sheet ID.
-   *
-   * Google Sheets does not guarantee the first worksheet retains ID `0`, so
-   * this method always resolves the current first sheet and creates one if the
-   * spreadsheet was somehow left empty.
-   *
-   * @param spreadsheet Tracking spreadsheet.
-   * @returns Primary worksheet used for tracking rows.
-   */
-  private getPrimarySheet(
-    spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet
-  ): GoogleAppsScript.Spreadsheet.Sheet {
-    const existingSheet = spreadsheet.getSheets()[0];
-    return existingSheet ?? spreadsheet.insertSheet('Tracking');
   }
 
   /**
