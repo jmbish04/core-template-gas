@@ -21,5 +21,8 @@
     "projects/**/*.tsx",
     "projects/**/*.d.ts",
     "shared/**/*.ts"
+  ],
+  "exclude": [
+    "projects/*/worker/**"
   ]
 }

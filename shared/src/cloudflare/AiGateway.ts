@@ -7,6 +7,12 @@ export interface AiGatewayConfig {
 }
 
 export function getAiGatewayBaseUrl(config: AiGatewayConfig): string {
-  const providerPath = config.provider === 'google' ? 'google-ai-studio' : config.provider;
-  return `https://gateway.ai.cloudflare.com/v1/${config.accountId}/${config.gatewayId}/${providerPath}`;
+  void config.provider;
+  return `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/ai/v1`;
+}
+
+export function getAiGatewayHeaders(config: Pick<AiGatewayConfig, 'gatewayId'>): Record<string, string> {
+  return {
+    'cf-aig-gateway-id': config.gatewayId
+  };
 }

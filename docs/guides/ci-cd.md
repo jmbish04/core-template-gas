@@ -19,6 +19,22 @@ This repo has two workflow layers.
 
 - `CLASP_CREDENTIALS_JSON`: full clasp credentials JSON written to `~/.clasprc.json`
 - `CLASP_PROJECTS_JSON`: per-project script metadata
+- `CLOUDFLARE_ACCOUNT_ID`: injected into generated Apps Script server bundles before `clasp push`
+
+## Local Secret Sync
+
+Use [`scripts/update-clasp-github-secret.sh`](/Volumes/Projects/workers/core-template-gas/scripts/update-clasp-github-secret.sh) to refresh `CLASP_CREDENTIALS_JSON` from your local `clasp` login:
+
+```bash
+scripts/update-clasp-github-secret.sh
+```
+
+The script:
+
+- reads `~/.clasprc.json` by default
+- falls back to `~/.config/clasp/.clasprc.json`
+- infers the GitHub repo from `origin`, or accepts `--repo owner/name`
+- updates the target secret with `gh secret set`
 
 ## Security Boundary
 

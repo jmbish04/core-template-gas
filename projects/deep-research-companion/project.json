@@ -1,0 +1,8 @@
+{
+  "name": "deep-research-companion",
+  "displayName": "Deep Research Companion",
+  "description": "Monitors Gemini Deep Research exports, formats Google Docs, previews PWAs, and syncs both into the paired Cloudflare research archive worker.",
+  "cloudflare": {
+    "aiGatewayId": "default-gateway"
+  }
+}

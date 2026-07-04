@@ -7,6 +7,7 @@ This repository is the single source of truth for multiple Google Apps Script pr
 ## Non-Negotiable Structure
 
 - Every deployable script lives under `projects/<project-name>/`.
+- If a project ships with a sibling `worker/` folder, treat that worker as intentionally paired infrastructure for the project and keep the pairing documented in the project README and `docs/projects/`.
 - Shared code lives under `shared/` and is imported by projects instead of duplicated.
 - The project registry in `projects.json` is authoritative.
 - Documentation changes belong in `docs/` instead of expanding the root `README.md` indefinitely.
@@ -27,6 +28,7 @@ Every project must include:
 - Use the root Node scripts in `scripts/`; do not add ad hoc per-project shell workflows when the shared scripts can be extended.
 - Do not commit live `.clasp.json` credentials.
 - CI/CD assumes clasp secrets are injected from GitHub Actions, primarily through `CLASP_CREDENTIALS_JSON` and `CLASP_PROJECTS_JSON`.
+- Use `scripts/update-clasp-github-secret.sh` to push local `clasp` credentials into the GitHub `CLASP_CREDENTIALS_JSON` secret when rotating or refreshing auth.
 - If a shared library change impacts runtime behavior, assume all projects are affected unless the impact surface is clearly narrowed in code and docs.
 
 ## Shared Library Rules
@@ -46,6 +48,7 @@ Every project must include:
 - Cloudflare AI Gateway routing must stay optional and provider-aware.
 - Shared tool execution should remain grounded in Apps Script primitives for Docs, Sheets, Drive, Gmail, and web app flows.
 - If the deployed `core-gsuite-tools` worker does not yet advertise a desired Cloudflare proxy endpoint, preserve the shared client contract and document the gap instead of silently changing Apps Script callers back to raw per-project Cloudflare API calls.
+- When a project-specific Cloudflare worker exists under `projects/<project-name>/worker`, prefer extending that worker for project-domain storage and UI rather than forcing the feature back into the shared `core-gsuite-tools` bridge.
 
 ## Documentation Requirements
 
@@ -54,6 +57,7 @@ When adding or changing a project, update:
 - `projects.json`
 - relevant `docs/guides/*`
 - relevant `docs/reference/*`
+- project-level `AGENTS.md` files when a subproject has its own operating constraints
 - the project folder README when behavior changes materially
 
 ## CI/CD Requirements

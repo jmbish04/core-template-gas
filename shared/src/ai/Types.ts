@@ -56,6 +56,7 @@ export interface AiClientOptions {
   apiKey: string;
   model: string;
   accountId?: string;
+  aiGatewayId?: string;
   gatewayBaseUrl?: string;
   defaultSystemInstruction?: string;
   maxToolIterations?: number;

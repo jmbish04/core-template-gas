@@ -91,7 +91,7 @@ export class AiClient {
       }
     ];
     const payload: Record<string, unknown> = {
-      model: this.options.model,
+      model: this.getResolvedModelName(),
       temperature: input.temperature ?? 0.2,
       messages
     };
@@ -118,9 +118,7 @@ export class AiClient {
         }>;
       }>(`${baseUrl}/chat/completions`, {
         method: 'post',
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`
-        },
+        headers: this.getAuthorizationHeaders(),
         payload: JSON.stringify(payload)
       });
 
@@ -161,6 +159,26 @@ export class AiClient {
   }
 
   private invokeAnthropic(input: GenerateTextInput): string {
+    if (this.shouldUseCloudflareAiGateway()) {
+      const response = HttpClient.requestJson<{
+        content: Array<{type: string; text?: string}>;
+      }>(`${this.getCloudflareAiBaseUrl()}/messages`, {
+        method: 'post',
+        headers: {
+          ...this.getAuthorizationHeaders(),
+          'anthropic-version': '2023-06-01'
+        },
+        payload: JSON.stringify({
+          model: this.getResolvedModelName(),
+          max_tokens: 2048,
+          system: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.agenticPlanner,
+          messages: [{role: 'user', content: input.prompt}]
+        })
+      });
+
+      return response.content.find((part) => part.type === 'text')?.text ?? '';
+    }
+
     const baseUrl = this.options.gatewayBaseUrl ?? 'https://api.anthropic.com/v1';
     const response = HttpClient.requestJson<{
       content: Array<{type: string; text?: string}>;
@@ -182,6 +200,30 @@ export class AiClient {
   }
 
   private invokeGemini(input: GenerateTextInput): string {
+    if (this.shouldUseCloudflareAiGateway()) {
+      const response = HttpClient.requestJson<{
+        choices: Array<{message: {content: string}}>;
+      }>(`${this.getCloudflareAiBaseUrl()}/chat/completions`, {
+        method: 'post',
+        headers: this.getAuthorizationHeaders(),
+        payload: JSON.stringify({
+          model: this.getResolvedModelName(),
+          messages: [
+            {
+              role: 'system',
+              content: input.systemInstruction ?? this.options.defaultSystemInstruction ?? PromptCatalog.workspaceOperator
+            },
+            {
+              role: 'user',
+              content: input.prompt
+            }
+          ]
+        })
+      });
+
+      return response.choices[0]?.message.content ?? '';
+    }
+
     if (this.options.gatewayBaseUrl) {
       const response = HttpClient.requestJson<{
         choices: Array<{message: {content: string}}>;
@@ -240,6 +282,10 @@ export class AiClient {
   }
 
   private getOpenAiCompatibleBaseUrl(): string {
+    if (this.shouldUseCloudflareAiGateway()) {
+      return this.getCloudflareAiBaseUrl();
+    }
+
     if (this.options.gatewayBaseUrl) {
       return this.options.gatewayBaseUrl;
     }
@@ -253,5 +299,56 @@ export class AiClient {
     }
 
     return 'https://api.openai.com/v1';
+  }
+
+  private shouldUseCloudflareAiGateway(): boolean {
+    return Boolean(this.options.accountId && this.options.aiGatewayId);
+  }
+
+  private getCloudflareAiBaseUrl(): string {
+    if (!this.options.accountId) {
+      throw new Error('Cloudflare AI Gateway requires accountId.');
+    }
+
+    return `https://api.cloudflare.com/client/v4/accounts/${this.options.accountId}/ai/v1`;
+  }
+
+  private getAuthorizationHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.options.apiKey}`
+    };
+
+    if (this.shouldUseCloudflareAiGateway() && this.options.aiGatewayId) {
+      headers['cf-aig-gateway-id'] = this.options.aiGatewayId;
+    }
+
+    return headers;
+  }
+
+  private getResolvedModelName(): string {
+    const model = this.options.model;
+
+    if (!this.shouldUseCloudflareAiGateway()) {
+      return model;
+    }
+
+    if (this.options.provider === 'workers-ai') {
+      return model.startsWith('@cf/') ? model : `@cf/${model}`;
+    }
+
+    if (model.includes('/')) {
+      return model;
+    }
+
+    switch (this.options.provider) {
+      case 'openai':
+        return `openai/${model}`;
+      case 'anthropic':
+        return `anthropic/${model}`;
+      case 'gemini':
+        return `google/${model}`;
+      default:
+        return model;
+    }
   }
 }

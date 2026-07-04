@@ -36,18 +36,34 @@ function getBootstrapState() {
   };
 }
 
+function parseBooleanFlag(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined || value === '') {
+    return fallback;
+  }
+
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+}
+
 function runWorkspaceAgent(prompt: string): string {
+  const injectedAccountId = __PROJECT_RUNTIME_CONFIG__.cloudflare.accountId;
+  const injectedGatewayId = __PROJECT_RUNTIME_CONFIG__.cloudflare.aiGatewayId;
   const provider = getOptionalScriptProperty('AI_PROVIDER', 'openai') as AiProvider;
   const model = getOptionalScriptProperty('AI_MODEL', DEFAULT_MODEL_BY_PROVIDER[provider]);
   const apiKey = getRequiredScriptProperty('AI_API_KEY');
-  const accountId = getOptionalScriptProperty('CLOUDFLARE_ACCOUNT_ID', '');
+  const accountId = getOptionalScriptProperty('CLOUDFLARE_ACCOUNT_ID', injectedAccountId);
   const gatewayBaseUrl = getOptionalScriptProperty('AI_GATEWAY_BASE_URL', '');
+  const aiGatewayId = getOptionalScriptProperty('AI_GATEWAY_ID', injectedGatewayId);
+  const useCloudflareGateway = parseBooleanFlag(
+    getOptionalScriptProperty('AI_USE_CLOUDFLARE_GATEWAY', ''),
+    Boolean(accountId && aiGatewayId)
+  );
 
   const client = new AiClient({
     provider,
     model,
     apiKey,
     accountId: accountId || undefined,
+    aiGatewayId: useCloudflareGateway ? aiGatewayId || undefined : undefined,
     gatewayBaseUrl: gatewayBaseUrl || undefined,
     defaultSystemInstruction: `${PromptCatalog.workspaceOperator} ${PromptCatalog.cloudflareOperator}`
   });

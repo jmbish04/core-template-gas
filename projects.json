@@ -20,6 +20,17 @@
       "manifest": "appsscript.json",
       "secretKey": "workspace-admin",
       "deployMode": "push"
+    },
+    {
+      "name": "deep-research-companion",
+      "displayName": "Deep Research Companion",
+      "path": "projects/deep-research-companion",
+      "serverEntry": "src/server/main.ts",
+      "clientEntry": "src/client/main.tsx",
+      "clientHtml": "src/client/index.html",
+      "manifest": "appsscript.json",
+      "secretKey": "deep-research-companion",
+      "deployMode": "push"
     }
   ]
 }

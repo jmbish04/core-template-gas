@@ -17,9 +17,20 @@ The AI layer is in [shared/src/ai](/Volumes/Projects/workers/core-template-gas/s
 
 ## Cloudflare AI Gateway
 
-Set `AI_GATEWAY_BASE_URL` in Script Properties to route provider requests through Cloudflare AI Gateway instead of a provider-native URL.
+The shared AI client now supports Cloudflare's updated account-scoped REST API pattern for AI Gateway.
 
-When `AI_PROVIDER=workers-ai` and `AI_GATEWAY_BASE_URL` is not set, also set `CLOUDFLARE_ACCOUNT_ID` so the shared client can target the native Workers AI endpoint correctly.
+- At deploy time, CI injects `CLOUDFLARE_ACCOUNT_ID` from GitHub secrets into the generated Apps Script bundle.
+- Each project can define its default gateway ID in `projects/<name>/project.json`.
+- The default repository fallback is `default-gateway`.
+
+Runtime overrides still exist through Script Properties:
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `AI_GATEWAY_ID`
+- `AI_USE_CLOUDFLARE_GATEWAY`
+- `AI_GATEWAY_BASE_URL`
+
+`AI_GATEWAY_BASE_URL` remains available as an escape hatch, but the preferred path is the updated Cloudflare REST API plus the `cf-aig-gateway-id` header.
 
 ## Built-In Tooling
 

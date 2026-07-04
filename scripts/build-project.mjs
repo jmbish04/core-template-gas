@@ -46,6 +46,15 @@ async function ensureProjectFiles(project) {
   }
 }
 
+async function readProjectMetadata(project) {
+  const metadataPath = path.join(getProjectRoot(project), 'project.json');
+  if (!(await fileExists(metadataPath))) {
+    return {};
+  }
+
+  return JSON.parse(await fs.readFile(metadataPath, 'utf8'));
+}
+
 async function buildClient(project) {
   const projectRoot = getProjectRoot(project);
   const distRoot = getDistRoot(project);
@@ -80,6 +89,7 @@ async function buildClient(project) {
 async function buildServer(project) {
   const projectRoot = getProjectRoot(project);
   const distRoot = getDistRoot(project);
+  const projectMetadata = await readProjectMetadata(project);
   const result = await build({
     entryPoints: [path.join(projectRoot, project.serverEntry)],
     bundle: true,
@@ -96,8 +106,16 @@ async function buildServer(project) {
     throw new Error(`No server bundle was produced for ${project.name}.`);
   }
 
+  const runtimeConfig = {
+    projectName: project.name,
+    cloudflare: {
+      accountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? '',
+      aiGatewayId: projectMetadata.cloudflare?.aiGatewayId ?? 'default-gateway'
+    }
+  };
   const header = `/** Generated for ${project.name}. Do not edit dist directly. */\n`;
-  await fs.writeFile(path.join(distRoot, 'Code.js'), `${header}${output.text}`);
+  const injectedRuntimeConfig = `const __PROJECT_RUNTIME_CONFIG__ = Object.freeze(${JSON.stringify(runtimeConfig)});\n`;
+  await fs.writeFile(path.join(distRoot, 'Code.js'), `${header}${injectedRuntimeConfig}${output.text}`);
 }
 
 async function copyManifest(project) {
