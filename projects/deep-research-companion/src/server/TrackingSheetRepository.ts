@@ -47,7 +47,7 @@ export class TrackingSheetRepository {
       const spreadsheetFile = DriveApp.getFileById(spreadsheet.getId());
       spreadsheetFile.moveTo(DriveApp.getFolderById(this.targetFolderId));
 
-      const sheet = spreadsheet.getSheetById(0)!;
+      const sheet = this.getPrimarySheet(spreadsheet);
       sheet.appendRow(['Document ID', 'Title', 'URL', 'Type', 'Date Created', 'Date Processed', 'Log File URL']);
       sheet.getRange('A1:G1').setFontWeight('bold').setBackground('#f3f3f3');
       sheet.setFrozenRows(1);
@@ -58,7 +58,7 @@ export class TrackingSheetRepository {
       return spreadsheet;
     }
 
-    this.ensureColumns(spreadsheet.getSheetById(0)!);
+    this.ensureColumns(this.getPrimarySheet(spreadsheet));
     return spreadsheet;
   }
 
@@ -68,7 +68,7 @@ export class TrackingSheetRepository {
    * @returns The first worksheet in the tracking spreadsheet.
    */
   getSheet(): GoogleAppsScript.Spreadsheet.Sheet {
-    return this.getOrCreateSpreadsheet().getSheetById(0)!;
+    return this.getPrimarySheet(this.getOrCreateSpreadsheet());
   }
 
   /**
@@ -127,7 +127,13 @@ export class TrackingSheetRepository {
         continue;
       }
 
-      const candidateCreatedAt = new Date(row[4]);
+      const candidateCreatedAt = this.parseSheetDate(row[4]);
+      const processedAt = this.parseSheetDate(row[5]);
+      if (!candidateCreatedAt || !processedAt) {
+        console.warn(`Skipping invalid tracking row ${index + 1} while finding nearby reports.`);
+        continue;
+      }
+
       if (Math.abs(candidateCreatedAt.getTime() - createdAt.getTime()) > maxAgeMs) {
         continue;
       }
@@ -138,7 +144,7 @@ export class TrackingSheetRepository {
         url: String(row[2]),
         type: row[3] as ResearchAssetType,
         dateCreated: candidateCreatedAt,
-        dateProcessed: new Date(row[5]),
+        dateProcessed: processedAt,
         logFileUrl: String(row[6] ?? '')
       });
     }
@@ -177,5 +183,38 @@ export class TrackingSheetRepository {
       sheet.getRange('G1').setValue('Log File URL').setFontWeight('bold').setBackground('#f3f3f3');
       sheet.setColumnWidth(7, 300);
     }
+  }
+
+  /**
+   * Returns the spreadsheet's primary worksheet using position rather than a
+   * hard-coded sheet ID.
+   *
+   * Google Sheets does not guarantee the first worksheet retains ID `0`, so
+   * this method always resolves the current first sheet and creates one if the
+   * spreadsheet was somehow left empty.
+   *
+   * @param spreadsheet Tracking spreadsheet.
+   * @returns Primary worksheet used for tracking rows.
+   */
+  private getPrimarySheet(
+    spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet
+  ): GoogleAppsScript.Spreadsheet.Sheet {
+    const existingSheet = spreadsheet.getSheets()[0];
+    return existingSheet ?? spreadsheet.insertSheet('Tracking');
+  }
+
+  /**
+   * Converts a sheet cell value into a valid JavaScript date.
+   *
+   * @param value Cell value read from the tracking sheet.
+   * @returns Parsed date, or `null` when the value is empty or invalid.
+   */
+  private parseSheetDate(value: unknown): Date | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const date = value instanceof Date ? value : new Date(String(value));
+    return Number.isNaN(date.getTime()) ? null : date;
   }
 }

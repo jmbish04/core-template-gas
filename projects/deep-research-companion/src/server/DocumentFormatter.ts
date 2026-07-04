@@ -93,32 +93,32 @@ export class DocumentFormatter {
         }
 
         const paragraphApi = paragraph as unknown as {
-          setForegroundColor: (color: string) => void;
           setBackgroundColor: (color: string) => void;
           setBorder: (position: unknown, width: number, color: string, borderStyle: unknown) => void;
         };
+        const paragraphText = paragraph.editAsText();
         const attrs: Record<string, unknown> = {};
         let updateAttrs = false;
 
         if (heading === DocumentApp.ParagraphHeading.HEADING1) {
-          paragraphApi.setForegroundColor('#1155cc');
+          paragraphText.setForegroundColor('#1155cc');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           if (index > 0) {
             attrs.PAGE_BREAK_BEFORE = true;
             updateAttrs = true;
           }
         } else if (heading === DocumentApp.ParagraphHeading.HEADING2) {
-          paragraphApi.setForegroundColor('#674ea7');
+          paragraphText.setForegroundColor('#674ea7');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
           if (index > 0) {
             attrs.PAGE_BREAK_BEFORE = true;
             updateAttrs = true;
           }
         } else if (heading === DocumentApp.ParagraphHeading.HEADING3) {
-          paragraphApi.setForegroundColor('#38761d');
+          paragraphText.setForegroundColor('#38761d');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         } else if (heading === DocumentApp.ParagraphHeading.HEADING4) {
-          paragraphApi.setForegroundColor('#134f5c');
+          paragraphText.setForegroundColor('#134f5c');
           paragraph.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
         } else if (heading === DocumentApp.ParagraphHeading.NORMAL) {
           const lowerText = text.toLowerCase();

@@ -24,6 +24,10 @@ export class HttpClient {
       throw new Error(`HTTP ${response.getResponseCode()} for ${url}: ${body}`);
     }
 
+    if (!body.trim()) {
+      return {} as T;
+    }
+
     return JSON.parse(body) as T;
   }
 }
