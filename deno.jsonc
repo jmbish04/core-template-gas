@@ -1,0 +1,17 @@
+{
+  "nodeModulesDir": "auto",
+  "compilerOptions": {
+    "types": [
+      "./node_modules/@types/google-apps-script/index.d.ts"
+    ]
+  },
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
+  "tasks": {
+    "build": "deno run --allow-env --allow-net --allow-read --allow-run --allow-write _build.ts",
+    "test": "deno test --config deno.jsonc main.test.ts",
+    "lock": "rm -f deno.lock && deno cache --reload _build.ts main.ts main.test.ts"
+  }
+}

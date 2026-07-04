@@ -1,7 +1,29 @@
-#build
 node_modules
-
+dist
+.DS_Store
 *.tsbuildinfo
+.clasp.json
+.clasprc.json
+projects/**/.clasp.json
+coverage
+*.lcov
+.env
+.env.test
+.cache
+.eslintcache
+.npm
+.next
+.nuxt
+.serverless
+.dynamodb
+pids
+*.pid
+*.pid.lock
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
 
+# local scratch and logs
 \#*\#
 .\#*
+*.log

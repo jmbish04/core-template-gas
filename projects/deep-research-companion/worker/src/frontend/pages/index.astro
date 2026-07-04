@@ -1,0 +1,11 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { ResearchLibrary } from "@/components/research/ResearchLibrary";
+---
+
+<BaseLayout
+  title="Deep Research Archive"
+  description="Browse synced Google Docs and Gemini-generated PWAs stored by the Deep Research Companion worker."
+>
+  <ResearchLibrary client:load />
+</BaseLayout>

@@ -1,0 +1,8 @@
+{
+  "name": "workspace-admin",
+  "displayName": "Workspace Admin",
+  "description": "Control panel for Apps Script, Workspace tooling, and Cloudflare-backed AI workflows.",
+  "cloudflare": {
+    "aiGatewayId": "default-gateway"
+  }
+}
