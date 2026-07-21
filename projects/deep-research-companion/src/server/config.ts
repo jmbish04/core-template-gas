@@ -9,6 +9,7 @@ const DEFAULT_BACKFILL_FOLDER_ID = '1iPn2gYaVDY1RdNc-jvhDWEaoYuLGUNLB';
 const DEFAULT_TRACKING_SHEET_PROPERTY = 'DEEP_RESEARCH_COMPANION_TRACKING_SHEET_ID';
 const DEFAULT_WORKER_BASE_URL = 'https://gas-companion-research.hacolby.workers.dev';
 
+
 /**
  * Resolves the effective runtime configuration for the Deep Research Companion
  * project.
