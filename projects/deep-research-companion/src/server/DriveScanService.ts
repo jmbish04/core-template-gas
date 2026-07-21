@@ -46,6 +46,7 @@ export class DriveScanService {
       { id: this.config.targetFolderId, category: 'DEFAULT' },
       { id: this.config.productResearchFolderId, category: 'PRODUCT' },
       { id: this.config.brandResearchFolderId, category: 'BRAND' }
+      { id: this.config.showroomResearchFolderId, category: 'SHOWROOM' }
     ];
 
     const processedIds = this.trackingSheetRepository.getProcessedIds();
