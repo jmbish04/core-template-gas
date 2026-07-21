@@ -1,10 +1,12 @@
 export type ResearchAssetType = 'REPORT' | 'WEB_APP';
+export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND';
 
 export interface ProcessedAssetRecord {
   fileId: string;
   name: string;
   url: string;
   type: ResearchAssetType;
+  category?: ResearchCategory;
   dateCreated: Date;
   dateProcessed: Date;
   logFileUrl: string;
