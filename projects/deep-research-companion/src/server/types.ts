@@ -1,5 +1,5 @@
 export type ResearchAssetType = 'REPORT' | 'WEB_APP';
-export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND';
+export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND' | 'SHOWROOM';
 
 export interface ProcessedAssetRecord {
   fileId: string;
@@ -55,6 +55,7 @@ export interface ResearchWorkspaceConfig {
   targetFolderId: string;
   productResearchFolderId: string;
   brandResearchFolderId: string;
+  showroomResearchFolderId: string;
   logFolderId: string;
   backfillFolderId: string;
   trackingSheetPropertyName: string;
