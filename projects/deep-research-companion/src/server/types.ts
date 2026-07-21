@@ -51,6 +51,8 @@ export interface DocumentProcessResult {
 
 export interface ResearchWorkspaceConfig {
   targetFolderId: string;
+  productResearchFolderId: string;
+  brandResearchFolderId: string;
   logFolderId: string;
   backfillFolderId: string;
   trackingSheetPropertyName: string;
