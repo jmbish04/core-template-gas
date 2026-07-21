@@ -8,7 +8,7 @@ import {WorkerSyncClient} from './WorkerSyncClient';
 const GOOGLE_DOCS_MIME = 'application/vnd.google-apps.document';
 const HTML_MIME = 'text/html';
 
-export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND';
+export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND' | 'SHOWROOM';
 
 /**
  * Coordinates Drive scanning, formatting, worker synchronization, preview
@@ -45,7 +45,7 @@ export class DriveScanService {
     const targets: { id: string; category: ResearchCategory }[] = [
       { id: this.config.targetFolderId, category: 'DEFAULT' },
       { id: this.config.productResearchFolderId, category: 'PRODUCT' },
-      { id: this.config.brandResearchFolderId, category: 'BRAND' }
+      { id: this.config.brandResearchFolderId, category: 'BRAND' },
       { id: this.config.showroomResearchFolderId, category: 'SHOWROOM' }
     ];
 
