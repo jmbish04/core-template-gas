@@ -1,4 +1,4 @@
-name: Deploy Affected Apps Script Projects
+name: Deploy Affected Apps Script Projects (v2)
 
 on:
   push:
