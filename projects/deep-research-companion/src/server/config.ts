@@ -4,6 +4,7 @@ import type {ResearchWorkspaceConfig} from './types';
 const DEFAULT_TARGET_FOLDER_ID = '1E-2gq4xYvKYp_svn13F1Er_PGJzXuuVC';
 const PRODUCT_RESEARCH_FOLDER_ID = '17ZeNvOHpXBXrn_lSRpYWjlVPROMEMJFa';
 const BRAND_RESEARCH_FOLDER_ID = '1CblllJXtd1WmoJw8Molbe3rT3X9Kd3i5';
+const SHOWROOM_RESEARCH_FOLDER_ID = '15NNC2IjjyA5X6nftSj8iaiFeCj1ht40Y';
 const DEFAULT_LOG_FOLDER_ID = '12BeC-wUn63U8aS6TvrlLzjr0FMvReaSM';
 const DEFAULT_BACKFILL_FOLDER_ID = '1iPn2gYaVDY1RdNc-jvhDWEaoYuLGUNLB';
 const DEFAULT_TRACKING_SHEET_PROPERTY = 'DEEP_RESEARCH_COMPANION_TRACKING_SHEET_ID';
@@ -29,6 +30,7 @@ export function getResearchWorkspaceConfig(): ResearchWorkspaceConfig {
     targetFolderId: getOptionalScriptProperty('DEEP_RESEARCH_TARGET_FOLDER_ID', DEFAULT_TARGET_FOLDER_ID),
     productResearchFolderId: getOptionalScriptProperty('PRODUCT_RESEARCH_FOLDER_ID', PRODUCT_RESEARCH_FOLDER_ID),
     brandResearchFolderId: getOptionalScriptProperty('BRAND_RESEARCH_FOLDER_ID', BRAND_RESEARCH_FOLDER_ID),
+    showroomResearchFolderId: getOptionalScriptProperty('SHOWROOM_RESEARCH_FOLDER_ID', SHOWROOM_RESEARCH_FOLDER_ID),
     logFolderId: getOptionalScriptProperty('DEEP_RESEARCH_LOG_FOLDER_ID', DEFAULT_LOG_FOLDER_ID),
     backfillFolderId: getOptionalScriptProperty('DEEP_RESEARCH_BACKFILL_FOLDER_ID', DEFAULT_BACKFILL_FOLDER_ID),
     trackingSheetPropertyName: getOptionalScriptProperty(
