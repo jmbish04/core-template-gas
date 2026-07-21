@@ -8,6 +8,8 @@ import {WorkerSyncClient} from './WorkerSyncClient';
 const GOOGLE_DOCS_MIME = 'application/vnd.google-apps.document';
 const HTML_MIME = 'text/html';
 
+export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND';
+
 /**
  * Coordinates Drive scanning, formatting, worker synchronization, preview
  * listing, and tracking-sheet writes for the Deep Research Companion project.
@@ -35,51 +37,71 @@ export class DriveScanService {
   }
 
   /**
-   * Scans the configured Drive folder for newly created reports and HTML
-   * exports, processes each unseen asset, and records successful completions.
+   * Scans the configured Drive folders for newly created reports and HTML
+   * exports, processes each unseen asset, and records successful completions
+   * categorized by their source folder.
    */
   processNewDocuments(): void {
-    const folder = DriveApp.getFolderById(this.config.targetFolderId);
+    const targets: { id: string; category: ResearchCategory }[] = [
+      { id: this.config.targetFolderId, category: 'DEFAULT' },
+      { id: this.config.productResearchFolderId, category: 'PRODUCT' },
+      { id: this.config.brandResearchFolderId, category: 'BRAND' }
+    ];
+
     const processedIds = this.trackingSheetRepository.getProcessedIds();
 
-    this.scanAndProcess(folder, GOOGLE_DOCS_MIME, 'REPORT', processedIds);
-    this.scanAndProcess(folder, HTML_MIME, 'WEB_APP', processedIds);
+    for (const target of targets) {
+      if (!target.id) continue;
+      
+      const folder = DriveApp.getFolderById(target.id);
+      this.scanAndProcess(folder, GOOGLE_DOCS_MIME, 'REPORT', target.category, processedIds);
+      this.scanAndProcess(folder, HTML_MIME, 'WEB_APP', target.category, processedIds);
+    }
   }
 
   /**
    * Backfills the configured historical folder into the tracking sheet without
-   * mutating documents or sending worker sync requests.
+   * mutating documents or sending worker sync requests. Defaults to the DEFAULT category.
    */
   backfillFolder(): void {
     const folder = DriveApp.getFolderById(this.config.backfillFolderId);
     const processedIds = this.trackingSheetRepository.getProcessedIds();
 
-    this.backfillByType(folder, GOOGLE_DOCS_MIME, 'REPORT', processedIds);
-    this.backfillByType(folder, HTML_MIME, 'WEB_APP', processedIds);
+    this.backfillByType(folder, GOOGLE_DOCS_MIME, 'REPORT', 'DEFAULT', processedIds);
+    this.backfillByType(folder, HTML_MIME, 'WEB_APP', 'DEFAULT', processedIds);
   }
 
   /**
-   * Returns searchable preview metadata for HTML exports in the target folder.
+   * Returns searchable preview metadata for HTML exports across all target folders.
    *
    * @param keyword Optional Drive full-text query.
    * @returns Sorted HTML preview metadata with newest items first.
    */
   getFilesList(keyword: string): PreviewFileSummary[] {
-    const folder = DriveApp.getFolderById(this.config.targetFolderId);
-    const files =
-      keyword && keyword.trim() !== ''
-        ? folder.searchFiles(`fullText contains '${keyword.replace(/'/g, "\\'")}' and mimeType = '${HTML_MIME}'`)
-        : folder.getFilesByType(HTML_MIME);
+    const folderIds = [
+      this.config.targetFolderId,
+      this.config.productResearchFolderId,
+      this.config.brandResearchFolderId
+    ].filter(Boolean);
 
     const summaries: PreviewFileSummary[] = [];
-    while (files.hasNext()) {
-      const file = files.next();
-      summaries.push({
-        id: file.getId(),
-        name: file.getName().replace(/\.html$/i, ''),
-        date: file.getDateCreated().getTime(),
-        dateString: file.getDateCreated().toLocaleString()
-      });
+
+    for (const id of folderIds) {
+      const folder = DriveApp.getFolderById(id);
+      const files =
+        keyword && keyword.trim() !== ''
+          ? folder.searchFiles(`fullText contains '${keyword.replace(/'/g, "\\'")}' and mimeType = '${HTML_MIME}'`)
+          : folder.getFilesByType(HTML_MIME);
+
+      while (files.hasNext()) {
+        const file = files.next();
+        summaries.push({
+          id: file.getId(),
+          name: file.getName().replace(/\.html$/i, ''),
+          date: file.getDateCreated().getTime(),
+          dateString: file.getDateCreated().toLocaleString()
+        });
+      }
     }
 
     return summaries.sort((left, right) => right.date - left.date);
@@ -116,12 +138,14 @@ export class DriveScanService {
    * @param folder Drive folder currently being scanned.
    * @param mimeType MIME type selector.
    * @param typeLabel Logical asset type.
+   * @param category The research category this folder belongs to.
    * @param processedIds Known processed file identifiers.
    */
   private scanAndProcess(
     folder: GoogleAppsScript.Drive.Folder,
     mimeType: string,
     typeLabel: 'REPORT' | 'WEB_APP',
+    category: ResearchCategory,
     processedIds: Set<string>
   ): void {
     const files = folder.getFilesByType(mimeType);
@@ -133,13 +157,13 @@ export class DriveScanService {
       }
 
       try {
-        const record = typeLabel === 'REPORT' ? this.processReport(file) : this.processPwa(file);
+        const record = typeLabel === 'REPORT' ? this.processReport(file, category) : this.processPwa(file, category);
         this.trackingSheetRepository.appendRecord(record);
         this.notificationService.sendProcessedEmail(file, typeLabel);
         processedIds.add(fileId);
-        console.log(`Successfully processed ${typeLabel}: ${file.getName()}`);
+        console.log(`Successfully processed [${category}] ${typeLabel}: ${file.getName()}`);
       } catch (error) {
-        console.error(`Failed to process ${typeLabel} ${file.getName()} (${fileId}). ${String(error)}`);
+        console.error(`Failed to process [${category}] ${typeLabel} ${file.getName()} (${fileId}). ${String(error)}`);
       }
     }
   }
@@ -150,12 +174,14 @@ export class DriveScanService {
    * @param folder Backfill source folder.
    * @param mimeType MIME type selector.
    * @param typeLabel Logical asset type.
+   * @param category The research category this folder belongs to.
    * @param processedIds Known processed identifiers.
    */
   private backfillByType(
     folder: GoogleAppsScript.Drive.Folder,
     mimeType: string,
     typeLabel: 'REPORT' | 'WEB_APP',
+    category: ResearchCategory,
     processedIds: Set<string>
   ): void {
     const files = folder.getFilesByType(mimeType);
@@ -170,10 +196,13 @@ export class DriveScanService {
         name: file.getName(),
         url: file.getUrl(),
         type: typeLabel,
+        category: category,
         dateCreated: this.toNativeDate(file.getDateCreated()),
         dateProcessed: new Date(),
         logFileUrl: 'Backfilled - No Log'
-      });
+      } as ProcessedAssetRecord & { category: ResearchCategory }); 
+      // Type cast ensures category is attached even if types.ts hasn't been updated yet
+      
       processedIds.add(file.getId());
     }
   }
@@ -182,9 +211,10 @@ export class DriveScanService {
    * Formats, serializes, and syncs a Google Doc report to the worker.
    *
    * @param file Report file to process.
+   * @param category The research category this folder belongs to.
    * @returns Tracking-sheet record for the processed report.
    */
-  private processReport(file: GoogleAppsScript.Drive.File): ProcessedAssetRecord {
+  private processReport(file: GoogleAppsScript.Drive.File, category: ResearchCategory): ProcessedAssetRecord {
     const formatResult = this.formatter.formatDocument(file.getId(), file.getName());
     if (!formatResult.success) {
       throw new Error(`Formatting failed for ${file.getName()}.`);
@@ -206,10 +236,11 @@ export class DriveScanService {
       name: file.getName(),
       url: file.getUrl(),
       type: 'REPORT',
+      category: category,
       dateCreated: this.toNativeDate(file.getDateCreated()),
       dateProcessed: new Date(),
       logFileUrl: formatResult.logUrl
-    };
+    } as ProcessedAssetRecord & { category: ResearchCategory };
   }
 
   /**
@@ -217,9 +248,10 @@ export class DriveScanService {
    * candidates to help relation inference.
    *
    * @param file HTML export file to process.
+   * @param category The research category this folder belongs to.
    * @returns Tracking-sheet record for the processed PWA asset.
    */
-  private processPwa(file: GoogleAppsScript.Drive.File): ProcessedAssetRecord {
+  private processPwa(file: GoogleAppsScript.Drive.File, category: ResearchCategory): ProcessedAssetRecord {
     const html = file.getBlob().getDataAsString();
     const relatedCandidates = this.trackingSheetRepository.findNearbyReports(this.toNativeDate(file.getDateCreated())).map((candidate) => ({
       documentId: candidate.fileId,
@@ -243,10 +275,11 @@ export class DriveScanService {
       name: file.getName(),
       url: file.getUrl(),
       type: 'WEB_APP',
+      category: category,
       dateCreated: this.toNativeDate(file.getDateCreated()),
       dateProcessed: new Date(),
       logFileUrl: 'Worker Sync'
-    };
+    } as ProcessedAssetRecord & { category: ResearchCategory };
   }
 
   /**
