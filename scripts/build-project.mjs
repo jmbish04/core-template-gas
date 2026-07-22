@@ -89,10 +89,39 @@ async function buildServer(project) {
       aiGatewayId: projectMetadata.cloudflare?.aiGatewayId ?? 'default-gateway'
     }
   };
+  const generatedAt = new Date().toISOString();
+  const entryPoints = projectMetadata.appsscript?.entryPoints ?? [];
+  if (!Array.isArray(entryPoints) || entryPoints.some((name) => typeof name !== 'string' || !/^[A-Za-z_$][\w$]*$/.test(name))) {
+    throw new Error(`${project.name} appsscript.entryPoints must contain valid JavaScript function names.`);
+  }
+
   const header = `/** Generated for ${project.name}. Do not edit dist directly. */\n`;
   const injectedRuntimeConfig = `const __PROJECT_RUNTIME_CONFIG__ = Object.freeze(${JSON.stringify(runtimeConfig)});\n`;
   const serverBundleSource = output.text;
-  await fs.writeFile(path.join(distRoot, 'Code.js'), `${header}${injectedRuntimeConfig}${serverBundleSource}`);
+  const entrypointHeader = [
+    '/**',
+    ` * Updated from GitHub source: ${generatedAt}`,
+    ` * Project: ${project.name}`,
+    ' * Generated entrypoints only; compiled application logic lives in Compiled.js.',
+    ' */',
+    ''
+  ].join('\n');
+  const entrypointSource = entryPoints
+    .map(
+      (name) =>
+        `function ${name}(...args) {\n  return globalThis.__PROJECT_COMPILED__.${name}(...args);\n}`
+    )
+    .join('\n\n');
+  const deploymentPropertiesEntrypoint = `function applyDeploymentScriptProperties(propertiesJson) {\n  const properties = JSON.parse(propertiesJson);\n  PropertiesService.getScriptProperties().setProperties(properties, false);\n  return Object.keys(properties).sort();\n}`;
+
+  await fs.writeFile(
+    path.join(distRoot, 'Code.js'),
+    `${entrypointHeader}${entrypointSource}\n\n${deploymentPropertiesEntrypoint}\n`
+  );
+  await fs.writeFile(
+    path.join(distRoot, 'Compiled.js'),
+    `${header}${injectedRuntimeConfig}${serverBundleSource}`
+  );
   return serverBundleSource;
 }
 
@@ -102,7 +131,7 @@ async function writeManifest(project, serverBundleSource) {
   await fs.writeFile(path.join(distRoot, 'appsscript.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await fs.writeFile(
     path.join(distRoot, '.claspignore'),
-    ['**/*', '!appsscript.json', '!Code.js', '!Index.html'].join('\n')
+    ['**/*', '!appsscript.json', '!Code.js', '!Compiled.js', '!Index.html'].join('\n')
   );
 }
 

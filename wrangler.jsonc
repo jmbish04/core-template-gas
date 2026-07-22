@@ -1,0 +1,51 @@
+{
+  // Mandatory policy merged into every projects/<name>/worker/wrangler.jsonc.
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": true,
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  },
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  "vars": {
+    "AI_GATEWAY_ID": "default-gateway",
+    "MODEL_CHAT": "@cf/openai/gpt-oss-120b",
+    "MODEL_EXTRACT": "@cf/openai/gpt-oss-120b",
+    "MODEL_DRAFT": "@cf/openai/gpt-oss-120b",
+    "MODEL_TRANSCRIBE": "@cf/openai/whisper-large-v3-turbo",
+    "DEFAULT_MODEL_EMBEDDING": "@cf/baai/bge-large-en-v1.5"
+  },
+  "secrets_store_secrets": [
+    {"binding": "GITHUB_TOKEN", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "GH_TOKEN"},
+    {"binding": "CLOUDFLARE_ACCOUNT_ID", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "CLOUDFLARE_ACCOUNT_ID"},
+    {"binding": "CLOUDFLARE_WRANGLER_API_TOKEN", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "CLOUDFLARE_WRANGLER_API_TOKEN"},
+    {"binding": "WORKER_API_KEY", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "WORKER_API_KEY"},
+    {"binding": "GEMINI_API_KEY", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "GEMINI_API_KEY"},
+    {"binding": "AI_GATEWAY_TOKEN", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "CLOUDFLARE_AI_GATEWAY_TOKEN"},
+    {"binding": "GOOGLE_CREDS_SA_PRIVATE_KEY_PT_1", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "GOOGLE_CREDS_SA_PRIVATE_KEY_PT_1"},
+    {"binding": "GOOGLE_CREDS_SA_PRIVATE_KEY_PT_2", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "GOOGLE_CREDS_SA_PRIVATE_KEY_PT_2"},
+    {"binding": "GOOGLE_CREDS_SA_CLIENT_EMAIL", "store_id": "8c42fa70938644e0a8a109744467375f", "secret_name": "GOOGLE_CREDS_SA_CLIENT_EMAIL"}
+  ]
+}

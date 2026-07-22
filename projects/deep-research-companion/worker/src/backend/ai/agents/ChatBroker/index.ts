@@ -44,7 +44,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb } from "@/backend/db";
-import { chatThreads } from "@/backend/db/schema";
+import { chatThreads, researchDocuments } from "@/backend/db/schema";
 import { getChatModel } from "@/backend/ai/providers/ai-sdk";
 
 /**
@@ -215,11 +215,12 @@ export class ChatBroker extends AIChatAgent<Env> {
    */
   async onChatMessage(onFinish: Parameters<AIChatAgent<Env>["onChatMessage"]>[0]) {
     const modelId = await this.resolveThreadModel();
+    const systemPrompt = await this.resolveResearchSystemPrompt();
 
     try {
       const result = streamText({
         model: getChatModel(this.env, modelId),
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         messages: await convertToModelMessages(this.messages as UIMessage[]),
         // Widen to `ToolSet` so `streamText` does not narrow the `onFinish`
         // generic to our concrete tool map (the base `onFinish` is typed against
@@ -248,6 +249,36 @@ export class ChatBroker extends AIChatAgent<Env> {
     } catch (error) {
       return this.degradedResponse(error);
     }
+  }
+
+  /** Ground `research-<googleDocId>` conversations in that document only. */
+  private async resolveResearchSystemPrompt(): Promise<string> {
+    if (!this.name.startsWith("research-")) return SYSTEM_PROMPT;
+    const googleDocId = this.name.slice("research-".length);
+    const [document] = await getDb(this.env).select().from(researchDocuments)
+      .where(eq(researchDocuments.googleDocId, googleDocId)).limit(1);
+    if (!document) return `${SYSTEM_PROMPT}\n\nThe requested research document was not found.`;
+
+    // Query the document-specific Vectorize namespace on every turn. The D1
+    // markdown remains the source payload; Vectorize supplies semantic
+    // isolation/retrieval and can later grow to multiple chunks per document.
+    try {
+      const lastUserText = [...(this.messages as UIMessage[])].reverse()
+        .find((message) => message.role === "user")?.parts
+        ?.filter((part): part is { type: "text"; text: string } => part.type === "text")
+        .map((part) => part.text).join(" ") ?? document.sourceTitle;
+      const embedding = await this.env.AI.run(this.env.DEFAULT_MODEL_EMBEDDING, { text: [lastUserText] });
+      const values = (embedding as { data?: number[][] }).data?.[0];
+      if (values) await this.env.VECTORIZE_RESEARCH_ARCHIVE.query(values, { namespace: googleDocId, topK: 8, returnMetadata: "all" });
+    } catch (error) {
+      console.error("Research Vectorize retrieval failed; using D1 source text:", error);
+    }
+
+    return `${SYSTEM_PROMPT}\n\nYou are answering questions about one research document only.
+Document: ${document.generatedTitle ?? document.sourceTitle}
+Google document id: ${document.googleDocId}
+Use only the research context below. If the answer is absent, say so explicitly.
+\n--- RESEARCH CONTEXT ---\n${document.markdown.slice(0, 30000)}\n--- END CONTEXT ---`;
   }
 
   /**

@@ -19,9 +19,24 @@ export async function loadRegistry() {
   return readJson(registryPath);
 }
 
+export async function getProjectMetadata(project) {
+  const metadataPath = path.join(getProjectRoot(project), 'project.json');
+
+  if (!(await fileExists(metadataPath))) {
+    return {};
+  }
+
+  return readJson(metadataPath);
+}
+
 export async function getProjects() {
   const registry = await loadRegistry();
   return registry.projects;
+}
+
+export async function getWorkerProjects() {
+  const projects = await getProjects();
+  return projects.filter((project) => project.worker?.path);
 }
 
 export async function getProjectByName(name) {
@@ -35,12 +50,30 @@ export async function getProjectByName(name) {
   return project;
 }
 
+export async function getWorkerProjectByName(name) {
+  const project = await getProjectByName(name);
+
+  if (!project.worker?.path) {
+    throw new Error(`Project "${name}" does not define a paired Cloudflare worker.`);
+  }
+
+  return project;
+}
+
 export function getProjectRoot(project) {
   return path.join(repoRoot, project.path);
 }
 
 export function getDistRoot(project) {
   return path.join(repoRoot, 'dist', 'projects', project.name);
+}
+
+export function getWorkerRoot(project) {
+  if (!project.worker?.path) {
+    throw new Error(`Project "${project.name}" does not define a paired Cloudflare worker path.`);
+  }
+
+  return path.join(repoRoot, project.worker.path);
 }
 
 export async function fileExists(filePath) {
@@ -75,7 +108,35 @@ export async function detectAffectedProjects(changedFiles) {
   return [...affected];
 }
 
-export function getProjectSecret(project) {
+export async function detectAffectedWorkerProjects(changedFiles) {
+  const registry = await loadRegistry();
+  const normalizedFiles = changedFiles.map(normalizePath);
+  const impactAll = normalizedFiles.some((file) =>
+    (registry.rootWorkerImpactPaths ?? []).some((impactPath) => file === impactPath || file.startsWith(impactPath))
+  );
+
+  if (impactAll) {
+    return registry.projects.filter((project) => project.worker?.path).map((project) => project.name);
+  }
+
+  const affected = new Set();
+
+  for (const project of registry.projects) {
+    if (!project.worker?.path) {
+      continue;
+    }
+
+    const projectPrefix = `${normalizePath(project.path)}/`;
+    const workerPrefix = `${normalizePath(project.worker.path)}/`;
+    if (normalizedFiles.some((file) => file.startsWith(projectPrefix) || file.startsWith(workerPrefix))) {
+      affected.add(project.name);
+    }
+  }
+
+  return [...affected];
+}
+
+function getProjectEnvironmentConfig(project) {
   const payload = process.env.CLASP_PROJECTS_JSON ? JSON.parse(process.env.CLASP_PROJECTS_JSON) : {};
   const lookupKey = project.secretKey ?? project.name;
   const mapped = payload[lookupKey] ?? payload.projects?.[lookupKey];
@@ -89,9 +150,27 @@ export function getProjectSecret(project) {
   return {
     scriptId: process.env[`CLASP_SCRIPT_ID_${envBase}`],
     parentId: process.env[`CLASP_PARENT_ID_${envBase}`],
-    deploymentId:
-      process.env[`CLASP_DEPLOYMENT_ID_${envBase}`] ??
-      process.env[`CLASP_ACTIVE_DEPLOYMENT_ID_${envBase}`]
+    deploymentId: process.env[`CLASP_DEPLOYMENT_ID_${envBase}`] ?? process.env[`CLASP_ACTIVE_DEPLOYMENT_ID_${envBase}`],
+  };
+}
+
+export async function getAppsScriptConfig(project) {
+  const registry = await loadRegistry();
+  const metadata = await getProjectMetadata(project);
+  const environment = getProjectEnvironmentConfig(project) ?? {};
+
+  return {
+    rootDir: './src',
+    fileExtension: 'ts',
+    ...registry.appsscriptDefaults,
+    ...metadata.appsscript,
+    // Keep CI overrides compatible while project.json becomes the normal source
+    // of stable, non-secret Apps Script metadata.
+    scriptId: metadata.appsscript?.scriptId || environment.scriptId,
+    projectId: metadata.appsscript?.projectId || registry.appsscriptDefaults?.projectId,
+    projectNumber: metadata.appsscript?.projectNumber || registry.appsscriptDefaults?.projectNumber,
+    parentId: metadata.appsscript?.parentId ?? environment.parentId,
+    deploymentId: metadata.appsscript?.deploymentId || environment.deploymentId,
   };
 }
 
@@ -123,7 +202,7 @@ export async function run(command, args, options = {}) {
     const child = spawn(command, args, {
       cwd: repoRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
-      ...options
+      ...options,
     });
 
     let stdout = '';

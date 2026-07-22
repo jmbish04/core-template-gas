@@ -19,7 +19,8 @@ projects/<name>/
 ## Build Flow
 
 - the client is bundled into a single inline HTML payload
-- the server is bundled into `Code.js`
+- the server is bundled into `Compiled.js`
+- `Code.js` exposes the functions listed in `project.json` under `appsscript.entryPoints`, so Apps Script can discover them in the Run and trigger interfaces
 - server code serves `Index.html` through `HtmlService.createHtmlOutputFromFile`
 
 This keeps clasp output simple while preserving a modern frontend authoring flow.

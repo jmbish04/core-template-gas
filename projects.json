@@ -1,13 +1,25 @@
 {
   "version": 1,
+  "appsscriptDefaults": {
+    "projectId": "discovery-383518",
+    "projectNumber": "791610499666",
+    "rootDir": "./src",
+    "fileExtension": "ts"
+  },
   "rootImpactPaths": [
     "shared/",
     "scripts/",
+    "appsscript.json",
     "projects.json",
     "package.json",
     "package-lock.json",
     "tsconfig.json",
     ".github/workflows/"
+  ],
+  "rootWorkerImpactPaths": [
+    "wrangler.jsonc",
+    "scripts/",
+    "projects.json"
   ],
   "projects": [
     {
@@ -28,7 +40,13 @@
       "clientEntry": "src/client/main.tsx",
       "clientHtml": "src/client/index.html",
       "manifest": "appsscript.json",
-      "secretKey": "deep-research-companion"
+      "secretKey": "deep-research-companion",
+      "worker": {
+        "path": "projects/deep-research-companion/worker",
+        "installCommand": "corepack pnpm install --frozen-lockfile",
+        "deployCommand": "corepack pnpm deploy",
+        "typesCheckCommand": "corepack pnpm exec wrangler types --check --config wrangler.generated.jsonc"
+      }
     }
   ]
 }

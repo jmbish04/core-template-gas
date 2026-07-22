@@ -27,17 +27,32 @@ async function main() {
   const displayName = toDisplayName(projectName);
 
   await writeFile(
+    path.join(projectRoot, 'project.json'),
+    JSON.stringify(
+      {
+        name: projectName,
+        displayName,
+        description: '',
+        appsscript: {
+          scriptId: '',
+          rootDir: './src',
+          fileExtension: 'ts',
+          entryPoints: ['doGet'],
+        },
+        cloudflare: {
+          aiGatewayId: 'default-gateway',
+        },
+      },
+      null,
+      2
+    ) + '\n'
+  );
+
+  await writeFile(
     path.join(projectRoot, 'appsscript.json'),
     JSON.stringify(
       {
-        timeZone: 'America/Los_Angeles',
-        runtimeVersion: 'V8',
-        exceptionLogging: 'STACKDRIVER',
-        oauthScopes: [],
-        webapp: {
-          access: 'ANYONE',
-          executeAs: 'USER_DEPLOYING'
-        }
+        oauthScopes: ['https://www.googleapis.com/auth/script.storage'],
       },
       null,
       2
@@ -50,7 +65,7 @@ async function main() {
   return HtmlService.createHtmlOutputFromFile('Index').setTitle('${displayName}');
 }
 
-Object.assign(globalThis, {doGet});
+(globalThis as typeof globalThis & {__PROJECT_COMPILED__?: Record<string, unknown>}).__PROJECT_COMPILED__ = {doGet};
 
 export {};
 `
@@ -86,6 +101,7 @@ createRoot(document.getElementById('root')!).render(<App />);
   );
 
   process.stdout.write(`Scaffolded ${projectName} at ${projectRoot}\n`);
+  process.stdout.write(`Set appsscript.scriptId in ${path.join(projectRoot, 'project.json')} before deploying.\n`);
   process.stdout.write('Remember to add it to projects.json and docs.\n');
 }
 

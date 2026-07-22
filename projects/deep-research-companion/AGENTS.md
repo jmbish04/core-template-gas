@@ -16,7 +16,7 @@
 - Format Google Docs before sync.
 - Serialize Google Docs into markdown for worker ingestion.
 - Push document and PWA payloads to the paired worker API.
-- Preserve the Drive-hosted HTML preview model; the Apps Script build only ships `Code.js`, `Index.html`, and `appsscript.json`.
+- Preserve the Drive-hosted HTML preview model; the Apps Script build ships entrypoints in `Code.js`, bundled logic in `Compiled.js`, `Index.html`, and `appsscript.json`.
 
 ## Configuration Rules
 
@@ -34,6 +34,7 @@
 
 - Document ingest route: `/api/research/documents/ingest`
 - PWA ingest route: `/api/research/pwas/ingest`
+- Apps Script wake-up route: `/api/research/drive/wake`
 - PWA preview route: `/api/research/pwas/:driveFileId/render`
 - Gemini passthrough route: `/api/research/gemini-proxy`
 

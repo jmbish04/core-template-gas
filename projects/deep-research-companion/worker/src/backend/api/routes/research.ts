@@ -1,10 +1,13 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { and, desc, eq, isNull, isNotNull, like, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, isNotNull, like, ne, or } from "drizzle-orm";
 
 import { getDb } from "../../db";
+import { getWorkerApiKey } from "../../utils/secrets";
 import {
   researchDocuments,
   researchPwas,
+  researchTagDefs,
+  researchTagMappings,
   selectResearchDocumentSchema,
   selectResearchPwaSchema,
 } from "../../db/schema";
@@ -17,8 +20,10 @@ const documentIngestSchema = z.object({
   googleDocId: z.string().min(1),
   googleDocUrl: z.string().url(),
   sourceTitle: z.string().min(1),
+  researchCategory: z.enum(["DEFAULT", "PRODUCT", "BRAND", "SHOWROOM"]).default("DEFAULT"),
   markdown: z.string().min(1),
   createdAt: z.string().datetime(),
+  modifiedAt: z.string().datetime().optional(),
   formattedLogUrl: z.string().url().optional(),
   gatewayId: z.string().min(1),
 });
@@ -28,17 +33,23 @@ const pwaCandidateSchema = z.object({
   documentUrl: z.string().url(),
   title: z.string().min(1),
   createdAt: z.string().datetime(),
+  modifiedAt: z.string().datetime().optional(),
 });
 
 const pwaIngestSchema = z.object({
   driveFileId: z.string().min(1),
   driveFileUrl: z.string().url(),
   sourceTitle: z.string().min(1),
+  researchCategory: z.enum(["DEFAULT", "PRODUCT", "BRAND", "SHOWROOM"]).default("DEFAULT"),
   html: z.string().min(1),
   createdAt: z.string().datetime(),
+  modifiedAt: z.string().datetime().optional(),
   relatedDocumentCandidates: z.array(pwaCandidateSchema),
   gatewayId: z.string().min(1),
 });
+
+export type DocumentIngestInput = z.infer<typeof documentIngestSchema>;
+export type PwaIngestInput = z.infer<typeof pwaIngestSchema>;
 
 const libraryQuerySchema = z.object({
   q: z.string().optional(),
@@ -60,6 +71,20 @@ const relationSchema = z.object({
   relatedGoogleDocId: z.string().nullable(),
 });
 
+const driveWakeSchema = z.object({
+  source: z.literal("appsscript-trigger").default("appsscript-trigger"),
+  fileIds: z.array(z.string().min(1)).max(100).default([]),
+});
+
+const tagDefInputSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  description: z.string().trim().max(500).default(""),
+  htmlColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  isActive: z.boolean().default(true),
+});
+
+const tagMappingInputSchema = z.object({ tagIds: z.array(z.number().int().positive()) });
+
 const geminiProxyQuerySchema = z.object({
   target: z.string().url(),
 });
@@ -73,7 +98,15 @@ const libraryResponseSchema = z.object({
       sourceTitle: z.string(),
       generatedTitle: z.string().nullable(),
       summary: z.string().nullable(),
-      tags: z.array(z.string()),
+      tags: z.array(z.object({
+        id: z.number(),
+        name: z.string(),
+        description: z.string(),
+        htmlColor: z.string(),
+        isActive: z.boolean(),
+        timestamp: z.any(),
+      })),
+      pwa: z.object({ id: z.string(), driveFileId: z.string(), title: z.string() }).nullable(),
       createdAt: z.string(),
       syncedAt: z.string(),
     }),
@@ -96,6 +129,106 @@ const libraryResponseSchema = z.object({
 });
 
 export const researchRouter = new OpenAPIHono<{ Bindings: Env }>();
+
+/** Shared document upsert used by both Apps Script HTTP ingest and Drive scan. */
+export async function ingestResearchDocument(env: Env, body: DocumentIngestInput) {
+  const db = getDb(env);
+  const [existing] = await db.select().from(researchDocuments)
+    .where(eq(researchDocuments.googleDocId, body.googleDocId)).limit(1);
+  if (isCurrentDriveRevision(existing?.driveModifiedAt, body.modifiedAt, Boolean(existing))) {
+    return existing!;
+  }
+  const summary = await summarizeText(env, `Summarize this research document in 2-3 sentences.\n\n${body.markdown}`);
+  const generatedTitle = await summarizeText(
+    env,
+    `Return a concise title for this research document.\n\n${body.markdown.slice(0, 5000)}`,
+  );
+  await upsertDocumentEmbedding(env, body.googleDocId, body.markdown, {
+    googleDocId: body.googleDocId,
+    sourceTitle: body.sourceTitle,
+    researchCategory: body.researchCategory,
+    gatewayId: body.gatewayId,
+  });
+  const values = {
+    googleDocId: body.googleDocId,
+    googleDocUrl: body.googleDocUrl,
+    sourceTitle: body.sourceTitle,
+    researchCategory: body.researchCategory,
+    generatedTitle,
+    summary,
+    markdown: body.markdown,
+    formattedLogUrl: body.formattedLogUrl ?? null,
+    driveModifiedAt: body.modifiedAt ? new Date(body.modifiedAt) : new Date(body.createdAt),
+    createdAt: new Date(body.createdAt),
+    syncedAt: new Date(),
+  };
+  const [row] = existing
+    ? await db.update(researchDocuments).set(values)
+        .where(eq(researchDocuments.googleDocId, body.googleDocId)).returning()
+    : await db.insert(researchDocuments).values(values).returning();
+  return row!;
+}
+
+/** Shared HTML/PWA upsert used by Apps Script HTTP ingest and Drive scan. */
+export async function ingestResearchPwa(env: Env, body: PwaIngestInput) {
+  const db = getDb(env);
+  const [existing] = await db.select().from(researchPwas)
+    .where(eq(researchPwas.driveFileId, body.driveFileId)).limit(1);
+  if (isCurrentDriveRevision(existing?.driveModifiedAt, body.modifiedAt, Boolean(existing))) {
+    return existing!;
+  }
+  const r2Key = `research-pwas/${body.driveFileId}.html`;
+  await env.R2_RESEARCH_PWAS.put(r2Key, body.html, {
+    httpMetadata: { contentType: "text/html; charset=utf-8" },
+  });
+  const geminiApiTarget = findGeminiApiTarget(body.html);
+  const summary = await summarizeText(env, `Summarize this HTML/PWA app in 2-3 sentences.\n\n${body.html.slice(0, 8000)}`);
+  const generatedTitle = await summarizeText(
+    env,
+    `Return a concise title for this HTML/PWA app.\n\n${body.html.slice(0, 5000)}`,
+  );
+  const inferredRelation = existing?.relationSource === "MANUAL"
+    ? null
+    : await inferRelatedDocument(
+        env,
+        {
+          driveFileId: body.driveFileId,
+          title: body.sourceTitle,
+          html: body.html,
+          createdAt: body.createdAt,
+          researchCategory: body.researchCategory,
+        },
+        body.relatedDocumentCandidates,
+      );
+  const values = {
+    driveFileId: body.driveFileId,
+    driveFileUrl: body.driveFileUrl,
+    sourceTitle: body.sourceTitle,
+    researchCategory: body.researchCategory,
+    generatedTitle,
+    summary,
+    r2Key,
+    relatedGoogleDocId: existing?.relationSource === "MANUAL"
+      ? existing.relatedGoogleDocId
+      : inferredRelation?.documentId ?? null,
+    relationSource: existing?.relationSource === "MANUAL"
+      ? "MANUAL"
+      : inferredRelation ? "AUTO" : "UNMAPPED",
+    relationConfidence: existing?.relationSource === "MANUAL"
+      ? existing.relationConfidence
+      : inferredRelation?.confidence ?? null,
+    driveModifiedAt: body.modifiedAt ? new Date(body.modifiedAt) : new Date(body.createdAt),
+    geminiApiTarget,
+    geminiPatched: Boolean(geminiApiTarget),
+    createdAt: new Date(body.createdAt),
+    syncedAt: new Date(),
+  };
+  const [row] = existing
+    ? await db.update(researchPwas).set(values)
+        .where(eq(researchPwas.driveFileId, body.driveFileId)).returning()
+    : await db.insert(researchPwas).values(values).returning();
+  return row!;
+}
 
 researchRouter.openapi(
   createRoute({
@@ -161,13 +294,34 @@ researchRouter.openapi(
           ? documents.filter((row) => relatedDocumentIds.has(row.googleDocId))
           : documents;
 
+    const documentIds = filteredDocuments.map((row) => row.id);
+    const mappings = documentIds.length
+      ? await db
+          .select({ itemId: researchTagMappings.researchItemId, tag: researchTagDefs })
+          .from(researchTagMappings)
+          .innerJoin(researchTagDefs, eq(researchTagMappings.researchTagId, researchTagDefs.id))
+          .where(inArray(researchTagMappings.researchItemId, documentIds))
+      : [];
+    const tagsByDocument = new Map<string, typeof mappings[number]["tag"][]>();
+    for (const mapping of mappings) {
+      const tags = tagsByDocument.get(mapping.itemId) ?? [];
+      tags.push(mapping.tag);
+      tagsByDocument.set(mapping.itemId, tags);
+    }
+
     return c.json(
       {
         documents: filteredDocuments.map((row) => ({
           ...row,
           generatedTitle: row.generatedTitle ?? null,
           summary: row.summary ?? null,
-          tags: parseTags(row.tagsJson),
+          tags: tagsByDocument.get(row.id) ?? [],
+          pwa: pwas.find((pwa) => pwa.relatedGoogleDocId === row.googleDocId)
+            ? (() => {
+                const pwa = pwas.find((candidate) => candidate.relatedGoogleDocId === row.googleDocId)!;
+                return { id: pwa.id, driveFileId: pwa.driveFileId, title: pwa.generatedTitle ?? pwa.sourceTitle };
+              })()
+            : null,
           createdAt: row.createdAt.toISOString(),
           syncedAt: row.syncedAt.toISOString(),
         })),
@@ -186,6 +340,94 @@ researchRouter.openapi(
     );
   },
 );
+
+researchRouter.get("/documents/:id", async (c) => {
+  const db = getDb(c.env);
+  const id = c.req.param("id");
+  const [document] = await db.select().from(researchDocuments).where(eq(researchDocuments.id, id)).limit(1);
+  if (!document) return c.json({ error: "Research document not found." }, 404);
+  const [pwa, mappings, tagDefs] = await Promise.all([
+    db.select().from(researchPwas).where(eq(researchPwas.relatedGoogleDocId, document.googleDocId)).limit(1),
+    db.select({ tag: researchTagDefs }).from(researchTagMappings)
+      .innerJoin(researchTagDefs, eq(researchTagMappings.researchTagId, researchTagDefs.id))
+      .where(eq(researchTagMappings.researchItemId, document.id)),
+    db.select().from(researchTagDefs).where(eq(researchTagDefs.isActive, true)).orderBy(asc(researchTagDefs.name)),
+  ]);
+  return c.json({
+    document: { ...document, markdown: undefined, createdAt: document.createdAt.toISOString(), syncedAt: document.syncedAt.toISOString() },
+    tags: mappings.map((row) => row.tag),
+    availableTags: tagDefs,
+    pwa: pwa[0] ? { ...pwa[0], createdAt: pwa[0].createdAt.toISOString(), syncedAt: pwa[0].syncedAt.toISOString() } : null,
+  });
+});
+
+researchRouter.get("/pwas/unmapped", async (c) => {
+  const rows = await getDb(c.env).select().from(researchPwas)
+    .where(isNull(researchPwas.relatedGoogleDocId)).orderBy(desc(researchPwas.createdAt));
+  return c.json({ pwas: rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString(), syncedAt: row.syncedAt.toISOString() })) });
+});
+
+researchRouter.get("/tags", async (c) => {
+  const rows = await getDb(c.env).select().from(researchTagDefs).orderBy(asc(researchTagDefs.name));
+  return c.json({ tags: rows });
+});
+
+researchRouter.post("/tags", async (c) => {
+  const body = tagDefInputSchema.parse(await c.req.json());
+  const [row] = await getDb(c.env).insert(researchTagDefs).values(body).returning();
+  return c.json(row!, 201);
+});
+
+researchRouter.patch("/tags/:id", async (c) => {
+  const body = tagDefInputSchema.partial().parse(await c.req.json());
+  const [row] = await getDb(c.env).update(researchTagDefs).set(body)
+    .where(eq(researchTagDefs.id, Number(c.req.param("id")))).returning();
+  return row ? c.json(row) : c.json({ error: "Tag not found." }, 404);
+});
+
+researchRouter.put("/documents/:id/tags", async (c) => {
+  const { tagIds } = tagMappingInputSchema.parse(await c.req.json());
+  const itemId = c.req.param("id");
+  const db = getDb(c.env);
+  await db.delete(researchTagMappings).where(eq(researchTagMappings.researchItemId, itemId));
+  if (tagIds.length) {
+    await db.insert(researchTagMappings).values(tagIds.map((researchTagId) => ({ researchItemId: itemId, researchTagId })))
+      .onConflictDoNothing();
+  }
+  return c.json({ ok: true });
+});
+
+researchRouter.get("/drive/status", async (c) => {
+  const db = getDb(c.env);
+  const [documents, pwas] = await Promise.all([
+    db.select({ syncedAt: researchDocuments.syncedAt }).from(researchDocuments).orderBy(desc(researchDocuments.syncedAt)).limit(1),
+    db.select({ syncedAt: researchPwas.syncedAt }).from(researchPwas).orderBy(desc(researchPwas.syncedAt)).limit(1),
+  ]);
+  return c.json({
+    source: "google-drive-service-account",
+    configuredFolders: 4,
+    lastDocumentSyncAt: documents[0]?.syncedAt.toISOString() ?? null,
+    lastPwaSyncAt: pwas[0]?.syncedAt.toISOString() ?? null,
+  });
+});
+
+researchRouter.post("/drive/sync", async (c) => {
+  await assertWorkerApiKey(c.req.header("authorization"), c.env);
+  const { syncResearchFoldersFromDrive } = await import("../../services/google-drive-research");
+  return c.json(await syncResearchFoldersFromDrive(c.env));
+});
+
+researchRouter.post("/drive/wake", async (c) => {
+  await assertWorkerApiKey(c.req.header("authorization"), c.env);
+  const signal = driveWakeSchema.parse(await c.req.json());
+  const { syncResearchFoldersFromDrive } = await import("../../services/google-drive-research");
+  c.executionCtx.waitUntil(
+    syncResearchFoldersFromDrive(c.env)
+      .then((result) => console.log("Apps Script wake-up Drive sync completed", { signal, result }))
+      .catch((error) => console.error("Apps Script wake-up Drive sync failed", { signal, error })),
+  );
+  return c.json({ accepted: true, source: signal.source, hintedFileIds: signal.fileIds }, 202);
+});
 
 researchRouter.openapi(
   createRoute({
@@ -206,46 +448,8 @@ researchRouter.openapi(
     },
   }),
   async (c) => {
-    assertWorkerApiKey(c.req.header("authorization"), c.env);
-    const body = c.req.valid("json");
-    const db = getDb(c.env);
-    const summary = await summarizeText(c.env, `Summarize this research document in 2-3 sentences.\n\n${body.markdown}`);
-    const generatedTitle = await summarizeText(
-      c.env,
-      `Return a concise title for this research document.\n\n${body.markdown.slice(0, 5000)}`,
-    );
-    await upsertDocumentEmbedding(c.env, body.googleDocId, body.markdown, {
-      googleDocId: body.googleDocId,
-      sourceTitle: body.sourceTitle,
-      gatewayId: body.gatewayId,
-    });
-
-    const [existing] = await db
-      .select()
-      .from(researchDocuments)
-      .where(eq(researchDocuments.googleDocId, body.googleDocId))
-      .limit(1);
-
-    const values = {
-      googleDocId: body.googleDocId,
-      googleDocUrl: body.googleDocUrl,
-      sourceTitle: body.sourceTitle,
-      generatedTitle,
-      summary,
-      markdown: body.markdown,
-      formattedLogUrl: body.formattedLogUrl ?? null,
-      createdAt: new Date(body.createdAt),
-      syncedAt: new Date(),
-    };
-
-    const [row] = existing
-      ? await db
-          .update(researchDocuments)
-          .set(values)
-          .where(eq(researchDocuments.googleDocId, body.googleDocId))
-          .returning()
-      : await db.insert(researchDocuments).values(values).returning();
-
+    await assertWorkerApiKey(c.req.header("authorization"), c.env);
+    const row = await ingestResearchDocument(c.env, c.req.valid("json"));
     return c.json(row!, 200);
   },
 );
@@ -269,41 +473,8 @@ researchRouter.openapi(
     },
   }),
   async (c) => {
-    assertWorkerApiKey(c.req.header("authorization"), c.env);
-    const body = c.req.valid("json");
-    const db = getDb(c.env);
-    const r2Key = `research-pwas/${body.driveFileId}.html`;
-    await (c.env as any).R2_RESEARCH_PWAS.put(r2Key, body.html, {
-      httpMetadata: { contentType: "text/html; charset=utf-8" },
-    });
-
-    const geminiApiTarget = findGeminiApiTarget(body.html);
-    const summary = await summarizeText(c.env, `Summarize this HTML/PWA app in 2-3 sentences.\n\n${body.html.slice(0, 8000)}`);
-    const generatedTitle = await summarizeText(
-      c.env,
-      `Return a concise title for this HTML/PWA app.\n\n${body.html.slice(0, 5000)}`,
-    );
-    const relatedGoogleDocId = await inferRelatedDocumentId(c.env, summary, body.relatedDocumentCandidates, body.createdAt);
-
-    const [existing] = await db.select().from(researchPwas).where(eq(researchPwas.driveFileId, body.driveFileId)).limit(1);
-    const values = {
-      driveFileId: body.driveFileId,
-      driveFileUrl: body.driveFileUrl,
-      sourceTitle: body.sourceTitle,
-      generatedTitle,
-      summary,
-      r2Key,
-      relatedGoogleDocId,
-      geminiApiTarget,
-      geminiPatched: Boolean(geminiApiTarget),
-      createdAt: new Date(body.createdAt),
-      syncedAt: new Date(),
-    };
-
-    const [row] = existing
-      ? await db.update(researchPwas).set(values).where(eq(researchPwas.driveFileId, body.driveFileId)).returning()
-      : await db.insert(researchPwas).values(values).returning();
-
+    await assertWorkerApiKey(c.req.header("authorization"), c.env);
+    const row = await ingestResearchPwa(c.env, c.req.valid("json"));
     return c.json(row!, 200);
   },
 );
@@ -364,15 +535,14 @@ researchRouter.openapi(
     const { driveFileId } = c.req.valid("param");
     const body = c.req.valid("json");
     const db = getDb(c.env);
-    const [row] = await db
-      .update(researchPwas)
-      .set({
-        tagsJson: body.tags ? JSON.stringify(body.tags) : undefined,
-        relatedGoogleDocId: body.relatedGoogleDocId,
-        syncedAt: new Date(),
-      })
-      .where(eq(researchPwas.driveFileId, driveFileId))
-      .returning();
+    if (body.relatedGoogleDocId !== undefined) {
+      await setManualRelationship(db, driveFileId, body.relatedGoogleDocId);
+    }
+    const [row] = body.tags
+      ? await db.update(researchPwas)
+          .set({ tagsJson: JSON.stringify(body.tags), syncedAt: new Date() })
+          .where(eq(researchPwas.driveFileId, driveFileId)).returning()
+      : await db.select().from(researchPwas).where(eq(researchPwas.driveFileId, driveFileId)).limit(1);
     return c.json(row!, 200);
   },
 );
@@ -397,11 +567,7 @@ researchRouter.openapi(
   async (c) => {
     const body = c.req.valid("json");
     const db = getDb(c.env);
-    const [row] = await db
-      .update(researchPwas)
-      .set({ relatedGoogleDocId: body.relatedGoogleDocId, syncedAt: new Date() })
-      .where(eq(researchPwas.driveFileId, body.driveFileId))
-      .returning();
+    const row = await setManualRelationship(db, body.driveFileId, body.relatedGoogleDocId);
     return c.json(row!, 200);
   },
 );
@@ -467,8 +633,57 @@ function parseTags(value: string | null | undefined): string[] {
   }
 }
 
-function assertWorkerApiKey(header: string | undefined, env: Env): void {
-  const configured = String((env as any).WORKER_API_KEY ?? "");
+function isCurrentDriveRevision(
+  storedModifiedAt: Date | null | undefined,
+  incomingModifiedAt: string | undefined,
+  exists: boolean,
+): boolean {
+  if (!exists) return false;
+  if (!incomingModifiedAt) return true;
+  return Boolean(storedModifiedAt && storedModifiedAt.getTime() >= new Date(incomingModifiedAt).getTime());
+}
+
+async function setManualRelationship(
+  db: ReturnType<typeof getDb>,
+  driveFileId: string,
+  relatedGoogleDocId: string | null,
+) {
+  const [pwa] = await db.select().from(researchPwas)
+    .where(eq(researchPwas.driveFileId, driveFileId)).limit(1);
+  if (!pwa) throw new Error("PWA not found.");
+
+  if (relatedGoogleDocId) {
+    const [document] = await db.select({ id: researchDocuments.id }).from(researchDocuments)
+      .where(eq(researchDocuments.googleDocId, relatedGoogleDocId)).limit(1);
+    if (!document) throw new Error("Research document not found.");
+
+    await db.update(researchPwas)
+      .set({
+        relatedGoogleDocId: null,
+        relationSource: "UNMAPPED",
+        relationConfidence: null,
+        syncedAt: new Date(),
+      })
+      .where(and(
+        eq(researchPwas.relatedGoogleDocId, relatedGoogleDocId),
+        ne(researchPwas.driveFileId, driveFileId),
+      ));
+  }
+
+  const [row] = await db.update(researchPwas)
+    .set({
+      relatedGoogleDocId,
+      relationSource: "MANUAL",
+      relationConfidence: relatedGoogleDocId ? 100 : null,
+      syncedAt: new Date(),
+    })
+    .where(eq(researchPwas.driveFileId, driveFileId))
+    .returning();
+  return row;
+}
+
+async function assertWorkerApiKey(header: string | undefined, env: Env): Promise<void> {
+  const configured = await getWorkerApiKey(env) ?? "";
   if (!configured) {
     return;
   }
@@ -515,6 +730,7 @@ async function upsertDocumentEmbedding(
       {
         id: googleDocId,
         values,
+        namespace: googleDocId,
         metadata,
       },
     ]);
@@ -539,38 +755,102 @@ function rewriteGeminiUrls(html: string, env: Env, explicitTarget?: string): str
   return html.replace(/https:\/\/generativelanguage\.googleapis\.com\/[^\s"'`]+/g, proxyUrl);
 }
 
-async function inferRelatedDocumentId(
+async function inferRelatedDocument(
   env: Env,
-  summary: string,
+  pwa: {
+    driveFileId: string;
+    title: string;
+    html: string;
+    createdAt: string;
+    researchCategory: string;
+  },
   candidates: Array<{ documentId: string; title: string; createdAt: string }>,
-  createdAtIso: string,
-): Promise<string | null> {
+): Promise<{ documentId: string; confidence: number } | null> {
   if (candidates.length === 0) {
     return null;
   }
 
-  const createdAt = new Date(createdAtIso).getTime();
-  const nearest = [...candidates].sort(
-    (left, right) =>
-      Math.abs(new Date(left.createdAt).getTime() - createdAt) -
-      Math.abs(new Date(right.createdAt).getTime() - createdAt),
-  )[0];
+  const db = getDb(env);
+  const [documents, mappedPwas] = await Promise.all([
+    db.select().from(researchDocuments),
+    db.select({ driveFileId: researchPwas.driveFileId, googleDocId: researchPwas.relatedGoogleDocId })
+      .from(researchPwas)
+      .where(and(isNotNull(researchPwas.relatedGoogleDocId), ne(researchPwas.driveFileId, pwa.driveFileId))),
+  ]);
+  const candidateIds = new Set(candidates.map((candidate) => candidate.documentId));
+  const alreadyMapped = new Set(
+    mappedPwas.map((row) => row.googleDocId).filter((value): value is string => Boolean(value)),
+  );
+  const pwaCreatedAt = new Date(pwa.createdAt).getTime();
+  const pwaText = htmlToVisibleText(pwa.html);
+  const eligible = documents.filter((document) =>
+    candidateIds.has(document.googleDocId)
+    && !alreadyMapped.has(document.googleDocId)
+    && document.researchCategory === pwa.researchCategory
+    && Math.abs(document.createdAt.getTime() - pwaCreatedAt) <= 86_400_000
+  );
 
-  try {
-    const prompt = [
-      "Pick the most likely related research document for this HTML/PWA export.",
-      `PWA summary: ${summary}`,
-      "Candidates:",
-      ...candidates.map(
-        (candidate, index) =>
-          `${index + 1}. ${candidate.documentId} | ${candidate.title} | ${candidate.createdAt}`,
-      ),
-      "Return only the documentId, or NONE if no match is credible.",
-    ].join("\n");
-    const result = await summarizeText(env, prompt);
-    const found = candidates.find((candidate) => result.includes(candidate.documentId));
-    return found?.documentId ?? nearest.documentId ?? null;
-  } catch {
-    return nearest.documentId ?? null;
-  }
+  const ranked = eligible.map((document) => {
+    const ageMs = Math.abs(document.createdAt.getTime() - pwaCreatedAt);
+    const contentScore = contentSimilarity(pwaText, document.markdown);
+    const titleScore = titleSimilarity(pwa.title, document.sourceTitle);
+    const timeScore = Math.max(0, 1 - ageMs / 86_400_000);
+    return {
+      document,
+      contentScore,
+      score: contentScore * 0.65 + titleScore * 0.25 + timeScore * 0.1,
+    };
+  }).sort((left, right) => right.score - left.score);
+
+  const best = ranked[0];
+  if (!best || best.contentScore < 0.2 || best.score < 0.4) return null;
+  const runnerUp = ranked[1];
+  if (runnerUp && best.score - runnerUp.score < 0.08) return null;
+  return { documentId: best.document.googleDocId, confidence: Math.round(best.score * 100) };
+}
+
+function htmlToVisibleText(html: string): string {
+  return html
+    .replace(/<(script|style|noscript|svg)\b[^>]*>[\s\S]*?<\/\1>/giu, " ")
+    .replace(/<[^>]+>/gu, " ")
+    .replace(/&(nbsp|amp|quot|apos|lt|gt);/giu, " ")
+    .replace(/&#\d+;/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
+function contentSimilarity(left: string, right: string): number {
+  const a = meaningfulTokens(left);
+  const b = meaningfulTokens(right);
+  if (!a.size || !b.size) return 0;
+  const overlap = [...a].filter((token) => b.has(token)).length;
+  return overlap / Math.min(a.size, b.size);
+}
+
+function meaningfulTokens(value: string): Set<string> {
+  const stopWords = new Set([
+    "about", "after", "also", "been", "before", "being", "between", "could", "deep", "document",
+    "from", "have", "html", "into", "more", "most", "other", "research", "should", "that", "their",
+    "there", "these", "they", "this", "through", "using", "were", "what", "when", "where", "which",
+    "while", "with", "would", "your",
+  ]);
+  return new Set(
+    value.toLowerCase().replace(/[^a-z0-9]+/gu, " ").split(/\s+/u)
+      .filter((token) => token.length > 3 && !stopWords.has(token)),
+  );
+}
+
+function titleSimilarity(left: string, right: string): number {
+  const tokens = (value: string) => new Set(
+    value.toLowerCase()
+      .replace(/\.(html?|gdoc)$/u, "")
+      .replace(/\b(deep|research|report|interactive|app|pwa|google|document)\b/gu, " ")
+      .replace(/[^a-z0-9]+/gu, " ")
+      .trim().split(/\s+/u).filter((token) => token.length > 2),
+  );
+  const a = tokens(left);
+  const b = tokens(right);
+  if (!a.size || !b.size) return 0;
+  const overlap = [...a].filter((token) => b.has(token)).length;
+  return overlap / new Set([...a, ...b]).size;
 }

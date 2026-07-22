@@ -1,302 +1,89 @@
 "use client";
 
 import * as React from "react";
+import { ExternalLinkIcon, FileTextIcon, MonitorUpIcon, SearchIcon } from "lucide-react";
 
-import { apiGet, apiSend } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { apiGet } from "@/lib/api";
 
-type LibraryDocument = {
-  id: string;
-  googleDocId: string;
-  googleDocUrl: string;
-  sourceTitle: string;
-  generatedTitle: string | null;
-  summary: string | null;
-  tags: string[];
-  createdAt: string;
-  syncedAt: string;
+type Tag = { id: number; name: string; htmlColor: string; isActive: boolean };
+type ResearchItem = {
+  id: string; googleDocId: string; googleDocUrl: string; sourceTitle: string;
+  generatedTitle: string | null; summary: string | null; tags: Tag[];
+  createdAt: string; syncedAt: string;
+  pwa: { id: string; driveFileId: string; title: string } | null;
 };
-
-type LibraryPwa = {
-  id: string;
-  driveFileId: string;
-  driveFileUrl: string;
-  sourceTitle: string;
-  generatedTitle: string | null;
-  summary: string | null;
-  tags: string[];
-  relatedGoogleDocId: string | null;
-  geminiPatched: boolean;
-  createdAt: string;
-  syncedAt: string;
-};
-
-type LibraryResponse = {
-  documents: LibraryDocument[];
-  pwas: LibraryPwa[];
-};
-
-type FilterKind = "all" | "documents" | "pwas";
-type OrphanFilter = "all" | "orphans" | "related";
 
 export function ResearchLibrary() {
-  const [data, setData] = React.useState<LibraryResponse>({ documents: [], pwas: [] });
-  const [q, setQ] = React.useState("");
-  const [kind, setKind] = React.useState<FilterKind>("all");
-  const [orphan, setOrphan] = React.useState<OrphanFilter>("all");
-  const [selected, setSelected] = React.useState<{ kind: "document"; id: string } | { kind: "pwa"; id: string } | null>(null);
+  const [items, setItems] = React.useState<ResearchItem[]>([]);
+  const [query, setQuery] = React.useState("");
+  const [tagId, setTagId] = React.useState("all");
+  const [mapping, setMapping] = React.useState("all");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [tagDraft, setTagDraft] = React.useState("");
-
-  const load = React.useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await apiGet<LibraryResponse>("research/library", { q, kind, orphan });
-      setData(next);
-      if (!selected && next.documents[0]) {
-        setSelected({ kind: "document", id: next.documents[0].googleDocId });
-      } else if (!selected && next.pwas[0]) {
-        setSelected({ kind: "pwa", id: next.pwas[0].driveFileId });
-      }
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : String(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, [kind, orphan, q, selected]);
 
   React.useEffect(() => {
-    void load();
-  }, [load]);
+    apiGet<{ documents: ResearchItem[] }>("research/library")
+      .then((data) => setItems(data.documents))
+      .catch((cause) => setError(cause instanceof Error ? cause.message : String(cause)))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const selectedDocument = selected?.kind === "document"
-    ? data.documents.find((item) => item.googleDocId === selected.id) ?? null
-    : null;
-  const selectedPwa = selected?.kind === "pwa"
-    ? data.pwas.find((item) => item.driveFileId === selected.id) ?? null
-    : null;
-
-  React.useEffect(() => {
-    const tags = selectedDocument?.tags ?? selectedPwa?.tags ?? [];
-    setTagDraft(tags.join(", "));
-  }, [selectedDocument, selectedPwa]);
-
-  async function saveDocumentTags(documentId: string) {
-    await apiSend("PATCH", `research/documents/${documentId}`, {
-      tags: splitTags(tagDraft),
-    });
-    await load();
-  }
-
-  async function savePwa(pwaId: string, relatedGoogleDocId: string | null) {
-    await apiSend("PATCH", `research/pwas/${pwaId}`, {
-      tags: splitTags(tagDraft),
-      relatedGoogleDocId,
-    });
-    await load();
-  }
+  const tags = React.useMemo(() => {
+    const map = new Map<number, Tag>();
+    for (const item of items) for (const tag of item.tags) map.set(tag.id, tag);
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [items]);
+  const filtered = items.filter((item) => {
+    const haystack = `${item.generatedTitle ?? ""} ${item.sourceTitle} ${item.summary ?? ""}`.toLowerCase();
+    return haystack.includes(query.toLowerCase())
+      && (tagId === "all" || item.tags.some((tag) => String(tag.id) === tagId))
+      && (mapping === "all" || (mapping === "mapped" ? Boolean(item.pwa) : !item.pwa));
+  });
 
   return (
-    <div className="container mx-auto flex min-h-[calc(100svh-var(--header-height)-2rem)] max-w-7xl flex-col gap-6 px-4 py-8">
-      <section className="rounded-3xl bg-card p-6 ring-1 ring-border/40">
-        <p className="mb-2 text-xs uppercase tracking-[0.24em] text-muted-foreground">Research Archive</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Documents and PWA exports</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Browse synced Google Docs and HTML/PWA exports, keep tags up to date, and curate document-to-PWA relationships.
-        </p>
-      </section>
-
-      <section className="grid gap-4 rounded-3xl bg-card p-4 ring-1 ring-border/40 md:grid-cols-[1.6fr_0.8fr_0.8fr]">
-        <input
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          className="rounded-xl border border-border/50 bg-background px-4 py-3 text-sm"
-          placeholder="Search titles, summaries, or synced content"
-        />
-        <select
-          value={kind}
-          onChange={(event) => setKind(event.target.value as FilterKind)}
-          className="rounded-xl border border-border/50 bg-background px-4 py-3 text-sm"
-        >
-          <option value="all">All assets</option>
-          <option value="documents">Documents only</option>
-          <option value="pwas">PWAs only</option>
+    <div className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <div>
+        <p className="text-sm font-medium text-primary">Research archive</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">Deep research library</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Google research documents, their tags, and matched interactive HTML exports.</p>
+      </div>
+      <div className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_14rem_14rem]">
+        <label className="relative"><SearchIcon className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+          <Input className="pl-9" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Filter documents…" />
+        </label>
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" value={tagId} onChange={(e) => setTagId(e.target.value)}>
+          <option value="all">All tags</option>{tags.map((tag) => <option key={tag.id} value={tag.id}>{tag.name}</option>)}
         </select>
-        <select
-          value={orphan}
-          onChange={(event) => setOrphan(event.target.value as OrphanFilter)}
-          className="rounded-xl border border-border/50 bg-background px-4 py-3 text-sm"
-        >
-          <option value="all">All relations</option>
-          <option value="orphans">Orphans only</option>
-          <option value="related">Related only</option>
+        <select className="h-9 rounded-md border bg-background px-3 text-sm" value={mapping} onChange={(e) => setMapping(e.target.value)}>
+          <option value="all">All HTML mappings</option><option value="mapped">Has HTML</option><option value="unmapped">Missing HTML</option>
         </select>
-      </section>
-
-      {error ? <div className="rounded-2xl bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
-
-      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[24rem_1fr]">
-        <section className="rounded-3xl bg-card p-4 ring-1 ring-border/40">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">Library</h2>
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
-            >
-              Refresh
-            </button>
-          </div>
-          {loading ? (
-            <div className="py-10 text-sm text-muted-foreground">Loading archive…</div>
-          ) : (
-            <div className="space-y-3">
-              {data.documents.map((item) => (
-                <button
-                  key={item.googleDocId}
-                  type="button"
-                  onClick={() => setSelected({ kind: "document", id: item.googleDocId })}
-                  className="block w-full rounded-2xl border border-border/40 px-4 py-3 text-left hover:bg-muted/30"
-                >
-                  <div className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Document</div>
-                  <div className="font-medium">{item.generatedTitle ?? item.sourceTitle}</div>
-                  <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.summary ?? "No summary yet."}</div>
-                </button>
-              ))}
-              {data.pwas.map((item) => (
-                <button
-                  key={item.driveFileId}
-                  type="button"
-                  onClick={() => setSelected({ kind: "pwa", id: item.driveFileId })}
-                  className="block w-full rounded-2xl border border-border/40 px-4 py-3 text-left hover:bg-muted/30"
-                >
-                  <div className="mb-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">PWA</div>
-                  <div className="font-medium">{item.generatedTitle ?? item.sourceTitle}</div>
-                  <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.summary ?? "No summary yet."}</div>
-                </button>
-              ))}
-              {!data.documents.length && !data.pwas.length ? (
-                <div className="rounded-2xl border border-dashed border-border/50 px-4 py-10 text-center text-sm text-muted-foreground">
-                  No items matched the current filter.
-                </div>
-              ) : null}
-            </div>
-          )}
-        </section>
-
-        <section className="rounded-3xl bg-card p-4 ring-1 ring-border/40">
-          {selectedDocument ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Document View</p>
-                <h2 className="text-2xl font-semibold">{selectedDocument.generatedTitle ?? selectedDocument.sourceTitle}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{selectedDocument.summary ?? "No summary yet."}</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-[1fr_18rem]">
-                <iframe
-                  title={selectedDocument.sourceTitle}
-                  className="min-h-[70svh] rounded-2xl border border-border/40 bg-background"
-                  src={selectedDocument.googleDocUrl.replace("/edit", "/view")}
-                />
-                <div className="space-y-3 rounded-2xl border border-border/40 p-4">
-                  <label className="block text-sm font-medium">Tags</label>
-                  <input
-                    value={tagDraft}
-                    onChange={(event) => setTagDraft(event.target.value)}
-                    className="w-full rounded-xl border border-border/50 bg-background px-3 py-2 text-sm"
-                    placeholder="research, deep-dive, market-map"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void saveDocumentTags(selectedDocument.googleDocId)}
-                    className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                  >
-                    Save Tags
-                  </button>
-                  <div className="pt-3 text-sm text-muted-foreground">
-                    Related PWAs:
-                    <ul className="mt-2 space-y-2">
-                      {data.pwas.filter((item) => item.relatedGoogleDocId === selectedDocument.googleDocId).map((item) => (
-                        <li key={item.driveFileId}>
-                          <button
-                            type="button"
-                            onClick={() => setSelected({ kind: "pwa", id: item.driveFileId })}
-                            className="text-left text-primary hover:underline"
-                          >
-                            {item.generatedTitle ?? item.sourceTitle}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : selectedPwa ? (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">PWA View</p>
-                <h2 className="text-2xl font-semibold">{selectedPwa.generatedTitle ?? selectedPwa.sourceTitle}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{selectedPwa.summary ?? "No summary yet."}</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-[1fr_18rem]">
-                <iframe
-                  title={selectedPwa.sourceTitle}
-                  className="min-h-[70svh] rounded-2xl border border-border/40 bg-background"
-                  src={`/api/research/pwas/${selectedPwa.driveFileId}/render`}
-                />
-                <div className="space-y-3 rounded-2xl border border-border/40 p-4">
-                  <label className="block text-sm font-medium">Tags</label>
-                  <input
-                    value={tagDraft}
-                    onChange={(event) => setTagDraft(event.target.value)}
-                    className="w-full rounded-xl border border-border/50 bg-background px-3 py-2 text-sm"
-                    placeholder="pwa, gemini, prototype"
-                  />
-                  <label className="block text-sm font-medium">Related document</label>
-                  <select
-                    value={selectedPwa.relatedGoogleDocId ?? ""}
-                    onChange={(event) => void savePwa(selectedPwa.driveFileId, event.target.value || null)}
-                    className="w-full rounded-xl border border-border/50 bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">No relation</option>
-                    {data.documents.map((item) => (
-                      <option key={item.googleDocId} value={item.googleDocId}>
-                        {item.generatedTitle ?? item.sourceTitle}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => void savePwa(selectedPwa.driveFileId, selectedPwa.relatedGoogleDocId ?? null)}
-                    className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-                  >
-                    Save Tags
-                  </button>
-                  <div className="text-sm text-muted-foreground">
-                    Gemini passthrough:
-                    <span className="ml-2 font-medium text-foreground">
-                      {selectedPwa.geminiPatched ? "Detected and proxied" : "Not detected"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex min-h-[40svh] items-center justify-center text-sm text-muted-foreground">
-              Select a document or PWA to inspect it.
-            </div>
-          )}
-        </section>
+      </div>
+      {error ? <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div> : null}
+      <div className="overflow-hidden rounded-xl border bg-card">
+        <Table>
+          <TableHeader><TableRow><TableHead>Document name</TableHead><TableHead>Tags</TableHead><TableHead>HTML</TableHead><TableHead className="text-right">Open</TableHead></TableRow></TableHeader>
+          <TableBody>
+            {filtered.map((item) => (
+              <TableRow key={item.id} className="cursor-pointer" onClick={() => { window.location.href = `/research/${item.id}`; }}>
+                <TableCell className="max-w-xl"><div className="font-medium">{item.generatedTitle ?? item.sourceTitle}</div><div className="mt-1 line-clamp-1 text-xs text-muted-foreground">{item.summary ?? item.sourceTitle}</div></TableCell>
+                <TableCell><div className="flex max-w-sm flex-wrap gap-1">{item.tags.map((tag) => <Badge key={tag.id} variant="outline" style={{ borderColor: tag.htmlColor, color: tag.htmlColor }}>{tag.name}</Badge>)}{!item.tags.length && <span className="text-xs text-muted-foreground">No tags</span>}</div></TableCell>
+                <TableCell>{item.pwa ? <Badge variant="secondary">Mapped</Badge> : <Badge variant="outline">Not mapped</Badge>}</TableCell>
+                <TableCell><div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon-sm" render={<a href={`/research/${item.id}`} aria-label="Open research view" />}><FileTextIcon /></Button>
+                  <Button variant="ghost" size="icon-sm" render={<a href={`https://docs.google.com/document/d/${item.googleDocId}/edit`} target="_blank" aria-label="Open Google Doc" />}><ExternalLinkIcon /></Button>
+                  <Button variant="ghost" size="icon-sm" disabled={!item.pwa} render={item.pwa ? <a href={`/api/research/pwas/${item.pwa.driveFileId}/render`} target="_blank" aria-label="Open HTML app" /> : undefined}><MonitorUpIcon /></Button>
+                </div></TableCell>
+              </TableRow>
+            ))}
+            {!loading && !filtered.length ? <TableRow><TableCell colSpan={4} className="h-32 text-center text-muted-foreground">No research documents match these filters.</TableCell></TableRow> : null}
+            {loading ? <TableRow><TableCell colSpan={4} className="h-32 text-center text-muted-foreground">Loading research archive…</TableCell></TableRow> : null}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
-}
-
-function splitTags(value: string): string[] {
-  return value
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
 }
