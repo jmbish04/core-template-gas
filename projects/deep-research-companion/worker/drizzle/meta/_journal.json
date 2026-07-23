@@ -64,6 +64,13 @@
       "when": 1784762980055,
       "tag": "0009_busy_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784766245465,
+      "tag": "0010_rainy_hammerhead",
+      "breakpoints": true
     }
   ]
 }

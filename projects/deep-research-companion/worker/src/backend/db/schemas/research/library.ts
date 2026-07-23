@@ -76,12 +76,60 @@ export const researchTagMappings = sqliteTable("research_tag_mapping", {
   index("research_tag_mapping_item_idx").on(table.researchItemId),
 ]);
 
+/** One Apps Script processing-log JSON file discovered in the shared Drive log folder. */
+export const appsScriptLoggerFiles = sqliteTable("appsscript_logger_files", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+  jsonFileName: text("json_file_name").notNull(),
+  driveId: text("drive_id").notNull(),
+  driveUrl: text("drive_url").notNull(),
+  driveFolderId: text("drive_folder_id").notNull(),
+  documentId: text("document_id").notNull(),
+  documentTitle: text("document_title").notNull(),
+}, (table) => [uniqueIndex("appsscript_logger_files_drive_id_unique").on(table.driveId)]);
+
+/** A normalized entry from a processing log's `elements` array. */
+export const appsScriptLoggerLines = sqliteTable("appsscript_logger_lines", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  loggerFileId: integer("logger_file_id")
+    .notNull()
+    .references(() => appsScriptLoggerFiles.id, { onDelete: "cascade" }),
+  elementsArrayIndexNumber: integer("elements_array_index_number").notNull(),
+  type: text("type"),
+  snippet: text("snippet"),
+  fullJsonObject: text("full_json_object").notNull(),
+}, (table) => [
+  uniqueIndex("appsscript_logger_lines_file_index_unique").on(
+    table.loggerFileId,
+    table.elementsArrayIndexNumber,
+  ),
+  index("appsscript_logger_lines_file_idx").on(table.loggerFileId),
+]);
+
+/** A normalized entry from a processing log's `errors` array. */
+export const appsScriptLoggerErrors = sqliteTable("appsscript_logger_errors", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  loggerFileId: integer("logger_file_id")
+    .notNull()
+    .references(() => appsScriptLoggerFiles.id, { onDelete: "cascade" }),
+  errorsArrayIndexNumber: integer("errors_array_index_number").notNull(),
+  entireErrorsArray: text("entire_errors_array_").notNull(),
+}, (table) => [
+  uniqueIndex("appsscript_logger_errors_file_index_unique").on(
+    table.loggerFileId,
+    table.errorsArrayIndexNumber,
+  ),
+  index("appsscript_logger_errors_file_idx").on(table.loggerFileId),
+]);
+
 export const insertResearchDocumentSchema = createInsertSchema(researchDocuments);
 export const selectResearchDocumentSchema = createSelectSchema(researchDocuments);
 export const insertResearchPwaSchema = createInsertSchema(researchPwas);
 export const selectResearchPwaSchema = createSelectSchema(researchPwas);
 export const insertResearchTagDefSchema = createInsertSchema(researchTagDefs);
 export const selectResearchTagDefSchema = createSelectSchema(researchTagDefs);
+export const insertAppsScriptLoggerFileSchema = createInsertSchema(appsScriptLoggerFiles);
+export const selectAppsScriptLoggerFileSchema = createSelectSchema(appsScriptLoggerFiles);
 
 export type ResearchDocument = typeof researchDocuments.$inferSelect;
 export type NewResearchDocument = typeof researchDocuments.$inferInsert;

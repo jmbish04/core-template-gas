@@ -10,9 +10,19 @@
  */
 import { eq } from "drizzle-orm";
 
-import { RESEARCH_FOLDERS, type ResearchCategory } from "../../../../research-folders";
+import {
+  DEFAULT_LOG_FOLDER_ID,
+  RESEARCH_FOLDERS,
+  type ResearchCategory,
+} from "../../../../research-folders";
 import { getDb } from "../db";
-import { researchDocuments, researchPwas } from "../db/schema";
+import {
+  appsScriptLoggerErrors,
+  appsScriptLoggerFiles,
+  appsScriptLoggerLines,
+  researchDocuments,
+  researchPwas,
+} from "../db/schema";
 import {
   ingestResearchDocument,
   ingestResearchPwa,
@@ -39,6 +49,8 @@ export type DriveResearchSyncResult = {
   discovered: number;
   documentsIngested: number;
   pwasIngested: number;
+  loggerFilesDiscovered: number;
+  loggerFilesIngested: number;
   unchanged: number;
   errors: Array<{ folder: string; file?: string; message: string }>;
 };
@@ -47,10 +59,12 @@ export type DriveResearchSyncResult = {
 export async function syncResearchFoldersFromDrive(env: Env): Promise<DriveResearchSyncResult> {
   const token = await getGoogleDriveAccessToken(env);
   const result: DriveResearchSyncResult = {
-    folders: Object.keys(RESEARCH_FOLDERS).length,
+    folders: Object.keys(RESEARCH_FOLDERS).length + 1,
     discovered: 0,
     documentsIngested: 0,
     pwasIngested: 0,
+    loggerFilesDiscovered: 0,
+    loggerFilesIngested: 0,
     unchanged: 0,
     errors: [],
   };
@@ -120,7 +134,82 @@ export async function syncResearchFoldersFromDrive(env: Env): Promise<DriveResea
     }
   }
 
+
+  try {
+    const loggerFiles = (await listFolderFiles(token, DEFAULT_LOG_FOLDER_ID)).filter(isProcessingLogFile);
+    result.loggerFilesDiscovered = loggerFiles.length;
+    for (const file of loggerFiles) {
+      try {
+        const ingested = await ingestAppsScriptLoggerFile(env, token, file);
+        if (ingested) result.loggerFilesIngested += 1;
+        else result.unchanged += 1;
+      } catch (error) {
+        result.errors.push({ folder: "processing-logs", file: file.id, message: errorMessage(error) });
+      }
+    }
+  } catch (error) {
+    result.errors.push({ folder: "processing-logs", message: errorMessage(error) });
+  }
+
   return result;
+}
+
+type ProcessingLog = {
+  document_id?: unknown;
+  document_title?: unknown;
+  timestamp?: unknown;
+  elements?: unknown;
+  errors?: unknown;
+};
+
+/** Persist one immutable Apps Script processing log and normalize its arrays. */
+async function ingestAppsScriptLoggerFile(env: Env, token: string, file: DriveFile): Promise<boolean> {
+  const db = getDb(env);
+  const existing = await db.select({ id: appsScriptLoggerFiles.id })
+    .from(appsScriptLoggerFiles)
+    .where(eq(appsScriptLoggerFiles.driveId, file.id))
+    .limit(1);
+  if (existing.length > 0) return false;
+
+  const parsed = JSON.parse(await downloadDriveFile(token, file.id)) as ProcessingLog;
+  const elements = Array.isArray(parsed.elements) ? parsed.elements : [];
+  const errors = Array.isArray(parsed.errors) ? parsed.errors : [];
+  const timestamp = parseLogTimestamp(parsed.timestamp, file.createdTime);
+  const [loggerFile] = await db.insert(appsScriptLoggerFiles).values({
+    timestamp,
+    jsonFileName: file.name.replace(/\.json$/iu, ""),
+    driveId: file.id,
+    driveUrl: file.webViewLink ?? `https://drive.google.com/file/d/${file.id}/view`,
+    driveFolderId: DEFAULT_LOG_FOLDER_ID,
+    documentId: requiredLogString(parsed.document_id, "document_id", file.name),
+    documentTitle: requiredLogString(parsed.document_title, "document_title", file.name),
+  }).returning({ id: appsScriptLoggerFiles.id });
+
+  try {
+    for (const [arrayIndex, element] of elements.entries()) {
+      const object = isRecord(element) ? element : {};
+      await db.insert(appsScriptLoggerLines).values({
+        loggerFileId: loggerFile.id,
+        elementsArrayIndexNumber: arrayIndex,
+        type: optionalLogString(object.type),
+        snippet: optionalLogString(object.snippet),
+        fullJsonObject: JSON.stringify(element),
+      });
+    }
+
+    const entireErrorsArray = JSON.stringify(errors);
+    for (const [arrayIndex] of errors.entries()) {
+      await db.insert(appsScriptLoggerErrors).values({
+        loggerFileId: loggerFile.id,
+        errorsArrayIndexNumber: arrayIndex,
+        entireErrorsArray,
+      });
+    }
+  } catch (error) {
+    await db.delete(appsScriptLoggerFiles).where(eq(appsScriptLoggerFiles.id, loggerFile.id));
+    throw error;
+  }
+  return true;
 }
 
 async function getGoogleDriveAccessToken(env: Env): Promise<string> {
@@ -236,4 +325,28 @@ function errorMessage(error: unknown): string {
 
 function isHtmlFile(file: Pick<DriveFile, "mimeType" | "name">): boolean {
   return file.mimeType === HTML_MIME || /\.html?$/iu.test(file.name);
+}
+
+function isProcessingLogFile(file: Pick<DriveFile, "name">): boolean {
+  return /_processing_log\.json$/iu.test(file.name);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function optionalLogString(value: unknown): string | null {
+  return value === null || value === undefined ? null : String(value);
+}
+
+function requiredLogString(value: unknown, field: string, fileName: string): string {
+  const resolved = optionalLogString(value)?.trim();
+  if (!resolved) throw new Error(`${fileName} is missing required processing-log field ${field}.`);
+  return resolved;
+}
+
+function parseLogTimestamp(value: unknown, fallback: string): Date {
+  const date = new Date(typeof value === "string" ? value : fallback);
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid processing-log timestamp: ${String(value)}`);
+  return date;
 }

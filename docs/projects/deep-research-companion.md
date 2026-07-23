@@ -19,7 +19,7 @@
 
 ## Required configuration
 
-Research source folders are declared once in `projects/deep-research-companion/src/server/config.ts` through the `RESEARCH_FOLDERS` object. Each entry pairs a Drive folder ID with its `researchCategory`; the scanner iterates every entry automatically, and the tracking spreadsheet records that category in its `Research Category` column.
+Research source folders and shared runtime defaults are declared once in `projects/deep-research-companion/research-folders.ts`. `RESEARCH_FOLDERS` pairs each Drive folder ID with its `researchCategory`; the scanner iterates every entry automatically, and the tracking spreadsheet records that category in its `Research Category` column. The same module exports the log folder, backfill folder, tracking-sheet property and ID, and Worker base URL for both runtimes.
 
 The checked-in categories are:
 
@@ -52,5 +52,6 @@ Folder IDs may still be overridden with script properties. The general folder re
 - The Apps Script build deploys `appsscript.json`, a small timestamped `Code.js` with explicit runnable entrypoints, bundled logic in `Compiled.js`, and `Index.html`. HTML preview content remains Drive-hosted and is loaded dynamically at runtime.
 - The five-minute Apps Script trigger sends new document/PWA payloads and then calls `/api/research/drive/wake`; the Worker acknowledges immediately and reconciles all configured Drive folders in the background. Its independent fifteen-minute cron remains the fallback.
 - D1 deduplicates Drive assets by their stable Google file IDs and skips revisions whose `driveModifiedAt` is already current.
+- The Worker also scans the shared Apps Script log folder for `*_processing_log.json` files. D1 stores file/document metadata in `appsscript_logger_files`, normalized `elements` entries in `appsscript_logger_lines`, and indexed error-array records in `appsscript_logger_errors`; the original element objects and complete errors arrays remain available as JSON.
 - Automatic Doc/HTML relations require visible-content overlap, title support, creation-time proximity, category agreement, an unused document, and a clear lead over the next candidate. Manual corrections are marked `MANUAL` and survive later Drive scans.
 - The paired worker is intentionally nested under the project folder. Exclude `projects/*/worker/**` from root TypeScript checks unless the root toolchain is expanded to understand the worker app.

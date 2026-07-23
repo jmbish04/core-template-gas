@@ -1,14 +1,15 @@
 import {getOptionalScriptProperty} from '@shared/core/Properties';
-import {RESEARCH_FOLDERS} from '../../research-folders';
+import {
+  DEFAULT_BACKFILL_FOLDER_ID,
+  DEFAULT_LOG_FOLDER_ID,
+  DEFAULT_TRACKING_SHEET_ID,
+  DEFAULT_TRACKING_SHEET_PROPERTY,
+  DEFAULT_WORKER_BASE_URL,
+  RESEARCH_FOLDERS,
+} from '../../research-folders';
 import type {ResearchFolderDefinition, ResearchWorkspaceConfig} from './types';
 
 export {RESEARCH_FOLDERS};
-
-const DEFAULT_LOG_FOLDER_ID = '12BeC-wUn63U8aS6TvrlLzjr0FMvReaSM';
-const DEFAULT_BACKFILL_FOLDER_ID = '1iPn2gYaVDY1RdNc-jvhDWEaoYuLGUNLB';
-const DEFAULT_TRACKING_SHEET_PROPERTY = 'DEEP_RESEARCH_COMPANION_TRACKING_SHEET_ID';
-const DEFAULT_TRACKING_SHEET_ID = '1_VmTq_uOT44q3ny2QL0ptC4piDLc5J2qPyu_Mx78VYA';
-const DEFAULT_WORKER_BASE_URL = 'https://gas-companion-research.hacolby.workers.dev';
 
 /**
  * Resolves the effective runtime configuration for the Deep Research Companion
