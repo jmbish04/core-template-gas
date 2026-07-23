@@ -31,7 +31,8 @@ export class DriveScanService {
 
     this.trackingSheetRepository = new TrackingSheetRepository(
       defaultFolder.folderId,
-      config.trackingSheetPropertyName
+      config.trackingSheetPropertyName,
+      config.trackingSheetId
     );
     this.formatter = new DocumentFormatter(config.logFolderId);
     this.markdownService = new DocsMarkdownService();

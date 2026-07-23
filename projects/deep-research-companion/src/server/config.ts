@@ -7,6 +7,7 @@ export {RESEARCH_FOLDERS};
 const DEFAULT_LOG_FOLDER_ID = '12BeC-wUn63U8aS6TvrlLzjr0FMvReaSM';
 const DEFAULT_BACKFILL_FOLDER_ID = '1iPn2gYaVDY1RdNc-jvhDWEaoYuLGUNLB';
 const DEFAULT_TRACKING_SHEET_PROPERTY = 'DEEP_RESEARCH_COMPANION_TRACKING_SHEET_ID';
+const DEFAULT_TRACKING_SHEET_ID = '1_VmTq_uOT44q3ny2QL0ptC4piDLc5J2qPyu_Mx78VYA';
 const DEFAULT_WORKER_BASE_URL = 'https://gas-companion-research.hacolby.workers.dev';
 
 /**
@@ -40,6 +41,7 @@ export function getResearchWorkspaceConfig(): ResearchWorkspaceConfig {
       'DEEP_RESEARCH_TRACKING_SHEET_PROPERTY',
       DEFAULT_TRACKING_SHEET_PROPERTY
     ),
+    trackingSheetId: getOptionalScriptProperty(DEFAULT_TRACKING_SHEET_PROPERTY, DEFAULT_TRACKING_SHEET_ID),
     workerBaseUrl: getOptionalScriptProperty('RESEARCH_ARCHIVE_WORKER_BASE_URL', DEFAULT_WORKER_BASE_URL).replace(
       /\/+$/,
       ''

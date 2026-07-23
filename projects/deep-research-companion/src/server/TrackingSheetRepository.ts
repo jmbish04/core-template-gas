@@ -13,7 +13,8 @@ import type {ProcessedAssetRecord, ResearchAssetType} from './types';
 export class TrackingSheetRepository {
   constructor(
     private readonly targetFolderId: string,
-    private readonly trackingSheetPropertyName: string
+    private readonly trackingSheetPropertyName: string,
+    private readonly defaultTrackingSheetId: string
   ) {}
 
   /**
@@ -27,7 +28,7 @@ export class TrackingSheetRepository {
    */
   getOrCreateSpreadsheet(): GoogleAppsScript.Spreadsheet.Spreadsheet {
     const props = PropertiesService.getScriptProperties();
-    const existingId = props.getProperty(this.trackingSheetPropertyName);
+    const existingId = props.getProperty(this.trackingSheetPropertyName) || this.defaultTrackingSheetId;
 
     let spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null = null;
     let shouldCreate = false;

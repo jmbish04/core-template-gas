@@ -63,6 +63,7 @@ export interface ResearchWorkspaceConfig {
   logFolderId: string;
   backfillFolderId: string;
   trackingSheetPropertyName: string;
+  trackingSheetId: string;
   workerBaseUrl: string;
   workerApiKey: string;
   workerGatewayId: string;
