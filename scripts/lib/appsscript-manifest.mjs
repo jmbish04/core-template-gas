@@ -4,7 +4,7 @@ import path from 'node:path';
 import {build} from 'esbuild';
 import {getProjectRoot, repoRoot} from './projects.mjs';
 
-export const APPS_SCRIPT_TIMEZONE = 'America/Los_Angeles';
+export const ROOT_MANIFEST_PATH = path.join(repoRoot, 'appsscript.json');
 
 const SCOPE_RULES = [
   {
@@ -103,6 +103,10 @@ export async function readProjectManifest(project) {
   return JSON.parse(await fs.readFile(manifestPath, 'utf8'));
 }
 
+export async function readRootManifest() {
+  return JSON.parse(await fs.readFile(ROOT_MANIFEST_PATH, 'utf8'));
+}
+
 export async function bundleProjectServer(project) {
   const projectRoot = getProjectRoot(project);
   const result = await build({
@@ -136,6 +140,7 @@ function uniqueSorted(values) {
 
 export async function buildNormalizedManifest(project, options = {}) {
   const sourceManifest = options.sourceManifest ?? (await readProjectManifest(project));
+  const rootManifest = options.rootManifest ?? (await readRootManifest());
   const bundleSource = options.bundleSource ?? (await bundleProjectServer(project));
   const projectMetadata = options.projectMetadata ?? (await readProjectMetadata(project));
   const derivedScopes = inferOauthScopesFromBundle(bundleSource);
@@ -145,7 +150,11 @@ export async function buildNormalizedManifest(project, options = {}) {
 
   return {
     ...sourceManifest,
-    timeZone: APPS_SCRIPT_TIMEZONE,
-    oauthScopes: uniqueSorted([...derivedScopes, ...additionalScopes])
+    ...rootManifest,
+    oauthScopes: uniqueSorted([
+      ...(Array.isArray(rootManifest.oauthScopes) ? rootManifest.oauthScopes : []),
+      ...derivedScopes,
+      ...additionalScopes
+    ])
   };
 }

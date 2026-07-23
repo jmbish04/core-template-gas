@@ -13,7 +13,8 @@ import type {ProcessedAssetRecord, ResearchAssetType} from './types';
 export class TrackingSheetRepository {
   constructor(
     private readonly targetFolderId: string,
-    private readonly trackingSheetPropertyName: string
+    private readonly trackingSheetPropertyName: string,
+    private readonly defaultTrackingSheetId: string
   ) {}
 
   /**
@@ -21,13 +22,13 @@ export class TrackingSheetRepository {
    * target Drive folder on first use.
    *
    * The method also performs opportunistic schema repair when an older version
-   * of the sheet exists without the `Type`, `Category`, or `Log File URL` columns.
+   * of the sheet exists without the `Type` or `Log File URL` columns.
    *
    * @returns The tracking spreadsheet that stores processed asset metadata.
    */
   getOrCreateSpreadsheet(): GoogleAppsScript.Spreadsheet.Spreadsheet {
     const props = PropertiesService.getScriptProperties();
-    const existingId = props.getProperty(this.trackingSheetPropertyName);
+    const existingId = props.getProperty(this.trackingSheetPropertyName) || this.defaultTrackingSheetId;
 
     let spreadsheet: GoogleAppsScript.Spreadsheet.Spreadsheet | null = null;
     let shouldCreate = false;
@@ -55,10 +56,10 @@ export class TrackingSheetRepository {
         'Title',
         'URL',
         'Type',
-        'Category',
+        'Research Category',
         'Date Created',
         'Date Processed',
-        'Log File URL'
+        'Log File URL',
       ]);
       sheet.getRange('A1:H1').setFontWeight('bold').setBackground('#f3f3f3');
       sheet.setFrozenRows(1);
@@ -67,7 +68,7 @@ export class TrackingSheetRepository {
         {
           2: 250,
           3: 300,
-          7: 300 // Column H (0-indexed 7)
+          8: 300,
         }
       );
       props.setProperty(this.trackingSheetPropertyName, spreadsheet.getId());
@@ -111,16 +112,16 @@ export class TrackingSheetRepository {
    *
    * @param record Structured record describing the asset lifecycle event.
    */
-  appendRecord(record: ProcessedAssetRecord & {category?: string}): void {
+  appendRecord(record: ProcessedAssetRecord): void {
     this.getSheet().appendRow([
       record.fileId,
       record.name,
       record.url,
       record.type,
-      record.category || 'DEFAULT',
+      record.researchCategory,
       record.dateCreated,
       record.dateProcessed,
-      record.logFileUrl
+      record.logFileUrl,
     ]);
   }
 
@@ -144,7 +145,6 @@ export class TrackingSheetRepository {
         continue;
       }
 
-      // Indices shifted +1 due to Category column insertion at index 4
       const candidateCreatedAt = this.parseSheetDate(row[5]);
       const processedAt = this.parseSheetDate(row[6]);
       if (!candidateCreatedAt || !processedAt) {
@@ -161,11 +161,11 @@ export class TrackingSheetRepository {
         name: String(row[1]),
         url: String(row[2]),
         type: row[3] as ResearchAssetType,
-        category: String(row[4] ?? 'DEFAULT'),
+        researchCategory: String(row[4] || 'DEFAULT') as ProcessedAssetRecord['researchCategory'],
         dateCreated: candidateCreatedAt,
         dateProcessed: processedAt,
-        logFileUrl: String(row[7] ?? '')
-      } as ProcessedAssetRecord & {category: string});
+        logFileUrl: String(row[7] ?? ''),
+      });
     }
 
     return matches.sort(
@@ -177,15 +177,13 @@ export class TrackingSheetRepository {
 
   /**
    * Ensures the primary worksheet contains the expected columns. This keeps
-   * older spreadsheets forward-compatible with the modularized implementation
-   * and auto-migrates them to support the Category column without data loss.
+   * older spreadsheets forward-compatible with the modularized implementation.
    *
    * @param sheet Sheet to validate and patch in place.
    */
   private ensureColumns(sheet: GoogleAppsScript.Spreadsheet.Sheet): void {
-    let headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    const headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
 
-    // 1. Ensure 'Type' is at index 3 (Column D)
     if (headers.length >= 4 && headers[3] !== 'Type') {
       sheet.insertColumnBefore(4);
       sheet.getRange('D1').setValue('Type').setFontWeight('bold').setBackground('#f3f3f3');
@@ -195,25 +193,18 @@ export class TrackingSheetRepository {
       }
     }
 
-    // Refresh headers after potential mutation
-    headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
-
-    // 2. Ensure 'Category' is at index 4 (Column E)
-    if (headers.length >= 5 && headers[4] !== 'Category') {
+    const currentHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    if (currentHeaders[4] !== 'Research Category') {
       sheet.insertColumnBefore(5);
-      sheet.getRange('E1').setValue('Category').setFontWeight('bold').setBackground('#f3f3f3');
+      sheet.getRange('E1').setValue('Research Category').setFontWeight('bold').setBackground('#f3f3f3');
       const lastRow = sheet.getLastRow();
       if (lastRow > 1) {
-        // Backfill older rows with 'DEFAULT' category
         sheet.getRange(2, 5, lastRow - 1, 1).setValues(new Array(lastRow - 1).fill(['DEFAULT']));
       }
     }
 
-    // Refresh headers after potential mutation
-    headers = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
-
-    // 3. Ensure 'Log File URL' is at the end (index 7, Column H)
-    if (headers.length < 8 || headers[7] !== 'Log File URL') {
+    const finalHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+    if (finalHeaders.length < 8 || finalHeaders[7] !== 'Log File URL') {
       const lastColumn = sheet.getLastColumn();
       if (lastColumn < 8) {
         sheet.insertColumnAfter(lastColumn || 1);

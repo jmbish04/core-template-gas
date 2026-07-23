@@ -40,6 +40,11 @@ function backfillFolder(): void {
   driveScanService.backfillFolder();
 }
 
+/** Rebuilds the Worker research archive from every configured Drive folder. */
+function syncAllToWorker(): void {
+  driveScanService.syncAllToWorker();
+}
+
 /**
  * Returns preview metadata for Drive-hosted HTML exports.
  *
@@ -60,13 +65,14 @@ function getFileContent(fileId: string): string {
   return driveScanService.getFileContent(fileId);
 }
 
-Object.assign(globalThis, {
+(globalThis as typeof globalThis & {__PROJECT_COMPILED__?: Record<string, unknown>}).__PROJECT_COMPILED__ = {
   doGet,
   processNewDocuments,
   installTriggerAndSetup,
   backfillFolder,
+  syncAllToWorker,
   getFilesList,
   getFileContent
-});
+};
 
 export {};

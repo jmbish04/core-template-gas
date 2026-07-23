@@ -5,7 +5,7 @@
 Check:
 
 - `CLASP_CREDENTIALS_JSON` is valid JSON
-- `CLASP_PROJECTS_JSON` contains the current project key
+- `projects/<name>/project.json` contains a non-empty `appsscript.scriptId` (or `CLASP_PROJECTS_JSON` contains a legacy fallback)
 - the project `scriptId` is correct
 
 ## A project was not detected as affected

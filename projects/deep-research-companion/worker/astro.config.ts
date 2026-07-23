@@ -27,13 +27,6 @@ export default defineConfig({
     platformProxy: {
       enabled: true,
     },
-    routes: {
-      // Extend Cloudflare routes to include backend API routes
-      extend: {
-        include: ["/api/*"],
-        exclude: [],
-      },
-    },
     // Configure worker entry point with Durable Object exports.
     // These names must match the DO classes re-exported from `src/_worker.ts`
     // and the `durable_objects.bindings` class names in `wrangler.jsonc`.

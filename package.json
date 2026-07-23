@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Multi-project Google Apps Script workspace with a shared Apps Script library, React frontends, and affected-project CI/CD deploys.",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "build": "node ./scripts/build-all.mjs",
@@ -16,8 +16,11 @@
     "deno:lock": "deno task lock",
     "deploy:project": "node ./scripts/deploy-project.mjs",
     "deploy:affected": "node ./scripts/deploy-affected.mjs",
+    "deploy:worker": "node ./scripts/deploy-worker-project.mjs",
+    "deploy:workers:affected": "node ./scripts/deploy-affected-workers.mjs",
     "projects:list": "node ./scripts/list-projects.mjs",
     "projects:affected": "node ./scripts/affected-projects.mjs",
+    "projects:workers:affected": "node ./scripts/affected-worker-projects.mjs",
     "project:new": "node ./scripts/new-project.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "validate": "node ./scripts/validate-repo.mjs",

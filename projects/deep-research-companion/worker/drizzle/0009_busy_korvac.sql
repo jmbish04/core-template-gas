@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `research_pwas_related_google_doc_id_unique` ON `research_pwas` (`related_google_doc_id`);

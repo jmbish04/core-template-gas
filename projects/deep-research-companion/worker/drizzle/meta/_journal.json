@@ -36,6 +36,41 @@
       "when": 1782890288875,
       "tag": "0004_sticky_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784746728659,
+      "tag": "0006_research_tags",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1784761592223,
+      "tag": "0007_sparkling_daredevil",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1784762907637,
+      "tag": "0008_confused_toad_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1784762980055,
+      "tag": "0009_busy_korvac",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784766245465,
+      "tag": "0010_rainy_hammerhead",
+      "breakpoints": true
     }
   ]
 }

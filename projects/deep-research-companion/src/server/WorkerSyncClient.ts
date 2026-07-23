@@ -33,6 +33,11 @@ export class WorkerSyncClient {
     this.post('/api/research/pwas/ingest', payload as unknown as Record<string, unknown>);
   }
 
+  /** Wakes the Worker's direct Drive reconciliation scan after Apps Script finds new assets. */
+  wakeDriveScan(fileIds: string[]): void {
+    this.post('/api/research/drive/wake', {source: 'appsscript-trigger', fileIds});
+  }
+
   /**
    * Sends a JSON POST request to the configured worker.
    *

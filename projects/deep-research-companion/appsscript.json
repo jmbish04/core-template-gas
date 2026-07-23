@@ -15,6 +15,9 @@
     "executeAs": "USER_DEPLOYING",
     "access": "MYSELF"
   },
+  "executionApi": {
+    "access": "MYSELF"
+  },
   "oauthScopes": [
     "https://www.googleapis.com/auth/documents",
     "https://www.googleapis.com/auth/drive",

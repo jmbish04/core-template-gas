@@ -74,12 +74,12 @@ function runWorkspaceAgent(prompt: string): string {
   });
 }
 
-Object.assign(globalThis, {
+(globalThis as typeof globalThis & {__PROJECT_COMPILED__?: Record<string, unknown>}).__PROJECT_COMPILED__ = {
   doGet,
   onOpen,
   showAppSidebar,
   getBootstrapState,
   runWorkspaceAgent
-});
+};
 
 export {};

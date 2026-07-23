@@ -29,6 +29,7 @@ import { routeAgentRequest } from "agents";
 
 import { app as honoApp } from "./backend/api/index";
 import { handleInboundEmail } from "./backend/email/inbound";
+import { syncResearchFoldersFromDrive } from "./backend/services/google-drive-research";
 
 // Import Durable Object classes (the Agents SDK showcase + realtime agents)
 import { CodeModeAgent } from "./backend/ai/agents/CodeModeAgent";
@@ -125,6 +126,14 @@ export function createExports() {
     async email(message: any, env: Env, ctx: ExecutionContext) {
       await handleInboundEmail(message, env, ctx);
     },
+
+    async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+      ctx.waitUntil(
+        syncResearchFoldersFromDrive(env).then((result) => {
+          console.log("Direct Google Drive research sync completed", result);
+        }),
+      );
+    },
   } as unknown as ExportedHandler<Env>;
 
   return {
@@ -166,6 +175,10 @@ const handler = {
   // so this module is a valid standalone Worker target for a routing rule too.
   async email(message: any, env: Env, ctx: ExecutionContext) {
     await handleInboundEmail(message, env, ctx);
+  },
+
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(syncResearchFoldersFromDrive(env));
   },
 } as unknown as ExportedHandler<Env>;
 

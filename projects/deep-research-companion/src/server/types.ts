@@ -1,12 +1,14 @@
 export type ResearchAssetType = 'REPORT' | 'WEB_APP';
-export type ResearchCategory = 'DEFAULT' | 'PRODUCT' | 'BRAND' | 'SHOWROOM';
+
+export type {ResearchCategory, ResearchFolderDefinition} from '../../research-folders';
+import type {ResearchCategory, ResearchFolderDefinition} from '../../research-folders';
 
 export interface ProcessedAssetRecord {
   fileId: string;
   name: string;
   url: string;
   type: ResearchAssetType;
-  category?: ResearchCategory;
+  researchCategory: ResearchCategory;
   dateCreated: Date;
   dateProcessed: Date;
   logFileUrl: string;
@@ -24,14 +26,17 @@ export interface RelatedDocumentCandidate {
   documentUrl: string;
   title: string;
   createdAt: string;
+  modifiedAt?: string;
 }
 
 export interface DocumentIngestPayload {
   googleDocId: string;
   googleDocUrl: string;
   sourceTitle: string;
+  researchCategory: ResearchCategory;
   markdown: string;
   createdAt: string;
+  modifiedAt?: string;
   formattedLogUrl?: string;
   gatewayId: string;
 }
@@ -40,8 +45,10 @@ export interface PwaIngestPayload {
   driveFileId: string;
   driveFileUrl: string;
   sourceTitle: string;
+  researchCategory: ResearchCategory;
   html: string;
   createdAt: string;
+  modifiedAt?: string;
   relatedDocumentCandidates: RelatedDocumentCandidate[];
   gatewayId: string;
 }
@@ -52,13 +59,11 @@ export interface DocumentProcessResult {
 }
 
 export interface ResearchWorkspaceConfig {
-  targetFolderId: string;
-  productResearchFolderId: string;
-  brandResearchFolderId: string;
-  showroomResearchFolderId: string;
+  researchFolders: ResearchFolderDefinition[];
   logFolderId: string;
   backfillFolderId: string;
   trackingSheetPropertyName: string;
+  trackingSheetId: string;
   workerBaseUrl: string;
   workerApiKey: string;
   workerGatewayId: string;
