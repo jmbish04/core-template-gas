@@ -109,17 +109,19 @@ export const appsScriptLoggerLines = sqliteTable("appsscript_logger_lines", {
 /** A normalized entry from a processing log's `errors` array. */
 export const appsScriptLoggerErrors = sqliteTable("appsscript_logger_errors", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  loggerFileId: integer("logger_file_id")
+  logFileId: integer("log_file_id")
     .notNull()
     .references(() => appsScriptLoggerFiles.id, { onDelete: "cascade" }),
-  errorsArrayIndexNumber: integer("errors_array_index_number").notNull(),
-  entireErrorsArray: text("entire_errors_array_").notNull(),
+  errorArrayIndexNum: integer("error_array_index_num").notNull(),
+  elementType: text("element_type"),
+  error: text("error").notNull(),
+  snippet: text("snippet"),
 }, (table) => [
   uniqueIndex("appsscript_logger_errors_file_index_unique").on(
-    table.loggerFileId,
-    table.errorsArrayIndexNumber,
+    table.logFileId,
+    table.errorArrayIndexNum,
   ),
-  index("appsscript_logger_errors_file_idx").on(table.loggerFileId),
+  index("appsscript_logger_errors_file_idx").on(table.logFileId),
 ]);
 
 export const insertResearchDocumentSchema = createInsertSchema(researchDocuments);

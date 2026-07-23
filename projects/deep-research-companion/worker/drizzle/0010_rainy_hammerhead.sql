@@ -1,13 +1,15 @@
 CREATE TABLE `appsscript_logger_errors` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`logger_file_id` integer NOT NULL,
-	`errors_array_index_number` integer NOT NULL,
-	`entire_errors_array_` text NOT NULL,
-	FOREIGN KEY (`logger_file_id`) REFERENCES `appsscript_logger_files`(`id`) ON UPDATE no action ON DELETE cascade
+	`log_file_id` integer NOT NULL,
+	`error_array_index_num` integer NOT NULL,
+	`element_type` text,
+	`error` text NOT NULL,
+	`snippet` text,
+	FOREIGN KEY (`log_file_id`) REFERENCES `appsscript_logger_files`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `appsscript_logger_errors_file_index_unique` ON `appsscript_logger_errors` (`logger_file_id`,`errors_array_index_number`);--> statement-breakpoint
-CREATE INDEX `appsscript_logger_errors_file_idx` ON `appsscript_logger_errors` (`logger_file_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `appsscript_logger_errors_file_index_unique` ON `appsscript_logger_errors` (`log_file_id`,`error_array_index_num`);--> statement-breakpoint
+CREATE INDEX `appsscript_logger_errors_file_idx` ON `appsscript_logger_errors` (`log_file_id`);--> statement-breakpoint
 CREATE TABLE `appsscript_logger_files` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`timestamp` integer NOT NULL,

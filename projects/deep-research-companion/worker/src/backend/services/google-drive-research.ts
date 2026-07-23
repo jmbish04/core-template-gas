@@ -198,12 +198,14 @@ async function ingestAppsScriptLoggerFile(env: Env, token: string, file: DriveFi
       });
     }
 
-    const entireErrorsArray = JSON.stringify(errors);
-    for (const [arrayIndex] of errors.entries()) {
+    for (const [arrayIndex, errorEntry] of errors.entries()) {
+      const errorObject = isRecord(errorEntry) ? errorEntry : {};
       await db.insert(appsScriptLoggerErrors).values({
-        loggerFileId: loggerFile.id,
-        errorsArrayIndexNumber: arrayIndex,
-        entireErrorsArray,
+        logFileId: loggerFile.id,
+        errorArrayIndexNum: arrayIndex,
+        elementType: optionalLogString(errorObject.element_type),
+        error: requiredLogString(errorObject.error, "errors[].error", file.name),
+        snippet: optionalLogString(errorObject.snippet),
       });
     }
   } catch (error) {

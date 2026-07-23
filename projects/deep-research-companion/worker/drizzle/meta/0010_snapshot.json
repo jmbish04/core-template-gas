@@ -1768,25 +1768,39 @@
           "notNull": true,
           "autoincrement": true
         },
-        "logger_file_id": {
-          "name": "logger_file_id",
+        "log_file_id": {
+          "name": "log_file_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "errors_array_index_number": {
-          "name": "errors_array_index_number",
+        "error_array_index_num": {
+          "name": "error_array_index_num",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "entire_errors_array_": {
-          "name": "entire_errors_array_",
+        "element_type": {
+          "name": "element_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "error": {
+          "name": "error",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "snippet": {
+          "name": "snippet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },
@@ -1794,26 +1808,26 @@
         "appsscript_logger_errors_file_index_unique": {
           "name": "appsscript_logger_errors_file_index_unique",
           "columns": [
-            "logger_file_id",
-            "errors_array_index_number"
+            "log_file_id",
+            "error_array_index_num"
           ],
           "isUnique": true
         },
         "appsscript_logger_errors_file_idx": {
           "name": "appsscript_logger_errors_file_idx",
           "columns": [
-            "logger_file_id"
+            "log_file_id"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "appsscript_logger_errors_logger_file_id_appsscript_logger_files_id_fk": {
-          "name": "appsscript_logger_errors_logger_file_id_appsscript_logger_files_id_fk",
+        "appsscript_logger_errors_log_file_id_appsscript_logger_files_id_fk": {
+          "name": "appsscript_logger_errors_log_file_id_appsscript_logger_files_id_fk",
           "tableFrom": "appsscript_logger_errors",
           "tableTo": "appsscript_logger_files",
           "columnsFrom": [
-            "logger_file_id"
+            "log_file_id"
           ],
           "columnsTo": [
             "id"
