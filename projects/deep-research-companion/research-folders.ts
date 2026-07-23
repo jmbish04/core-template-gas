@@ -3,12 +3,6 @@
  * Cloudflare Worker. Add or change a folder here once; both runtimes consume
  * this exact module at build time.
  */
-export type ResearchCategory = "DEFAULT" | "PRODUCT" | "BRAND" | "SHOWROOM";
-export interface ResearchFolderDefinition {
-  folderId: string;
-  researchCategory: ResearchCategory;
-}
-
 export const RESEARCH_FOLDERS = {
   general: {
     folderId: "1E-2gq4xYvKYp_svn13F1Er_PGJzXuuVC",
@@ -26,6 +20,12 @@ export const RESEARCH_FOLDERS = {
     folderId: "15NNC2IjjyA5X6nftSj8iaiFeCj1ht40Y",
     researchCategory: "SHOWROOM",
   },
-} as const satisfies Record<string, ResearchFolderDefinition>;
+} as const;
 
 export type ResearchFolderKey = keyof typeof RESEARCH_FOLDERS;
+export type ResearchCategory = (typeof RESEARCH_FOLDERS)[ResearchFolderKey]["researchCategory"];
+
+export interface ResearchFolderDefinition {
+  folderId: string;
+  researchCategory: ResearchCategory;
+}
