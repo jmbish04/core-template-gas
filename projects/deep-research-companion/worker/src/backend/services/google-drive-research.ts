@@ -138,11 +138,18 @@ export async function syncResearchFoldersFromDrive(env: Env): Promise<DriveResea
   try {
     const loggerFiles = (await listFolderFiles(token, DEFAULT_LOG_FOLDER_ID)).filter(isProcessingLogFile);
     result.loggerFilesDiscovered = loggerFiles.length;
-    for (const file of loggerFiles) {
+    const indexedLoggerFiles = await getDb(env)
+      .select({ driveId: appsScriptLoggerFiles.driveId })
+      .from(appsScriptLoggerFiles);
+    const indexedDriveIds = new Set(indexedLoggerFiles.map(({ driveId }) => driveId));
+    const newLoggerFiles = loggerFiles.filter((file) => !indexedDriveIds.has(file.id));
+    result.unchanged += loggerFiles.length - newLoggerFiles.length;
+
+    for (const file of newLoggerFiles) {
       try {
-        const ingested = await ingestAppsScriptLoggerFile(env, token, file);
-        if (ingested) result.loggerFilesIngested += 1;
-        else result.unchanged += 1;
+        await ingestAppsScriptLoggerFile(env, token, file);
+        indexedDriveIds.add(file.id);
+        result.loggerFilesIngested += 1;
       } catch (error) {
         result.errors.push({ folder: "processing-logs", file: file.id, message: errorMessage(error) });
       }
@@ -163,14 +170,8 @@ type ProcessingLog = {
 };
 
 /** Persist one immutable Apps Script processing log and normalize its arrays. */
-async function ingestAppsScriptLoggerFile(env: Env, token: string, file: DriveFile): Promise<boolean> {
+async function ingestAppsScriptLoggerFile(env: Env, token: string, file: DriveFile): Promise<void> {
   const db = getDb(env);
-  const existing = await db.select({ id: appsScriptLoggerFiles.id })
-    .from(appsScriptLoggerFiles)
-    .where(eq(appsScriptLoggerFiles.driveId, file.id))
-    .limit(1);
-  if (existing.length > 0) return false;
-
   const parsed = JSON.parse(await downloadDriveFile(token, file.id)) as ProcessingLog;
   const elements = Array.isArray(parsed.elements) ? parsed.elements : [];
   const errors = Array.isArray(parsed.errors) ? parsed.errors : [];
@@ -209,7 +210,6 @@ async function ingestAppsScriptLoggerFile(env: Env, token: string, file: DriveFi
     await db.delete(appsScriptLoggerFiles).where(eq(appsScriptLoggerFiles.id, loggerFile.id));
     throw error;
   }
-  return true;
 }
 
 async function getGoogleDriveAccessToken(env: Env): Promise<string> {
