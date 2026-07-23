@@ -1,0 +1,1854 @@
+{
+  "tasks": [
+    {
+      "filePath": "AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/client/App.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/client/main.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/DocsMarkdownService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/DocumentFormatter.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/DriveScanService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/main.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/NotificationService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/runtime-config.d.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/TrackingSheetRepository.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/src/server/WorkerSyncClient.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/astro.config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/drizzle.config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/_worker.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/ArtifactAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/ArtifactAgent/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/BrowserHitlAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/BrowserHitlAgent/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/ChatBroker/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/CodeModeAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/CodeModeAgent/sandbox.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/CodeModeAgent/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/CoderAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/McpAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/NotificationsAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/OrchestratorAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/OrchestratorAgent/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/ResearcherAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/SkillsAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/ThinkingAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/WorkflowsAgent/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/agents/WorkflowsAgent/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/_define.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/aura-1.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/bge-large-en-v1-5.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/chat-models.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/gpt-oss-120b.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/llama-3-1-8b-instruct.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/llama-3-3-70b-instruct-fp8-fast.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/llava-1-5-7b-hf.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/models/whisper.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/providers/ai-sdk.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/providers/base.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/providers/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/providers/workers-ai.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/utils/token-estimator.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/ai/workersai/health.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/lib/auth.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/middleware/auth.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/middleware/error.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/activity.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/auth.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/client-error.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/dashboard.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/docs.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/health.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/inbox.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/notifications.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/projects.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/research.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/seed.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/settings.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/task-detail.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/task-hierarchy.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/tasks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/team-notes.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/threads.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/api/routes/webhooks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/health.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schema.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/best-practices.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/chat/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/chat/threads.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/dashboard-metrics.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/global-config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/health-checks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/health/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/health/results.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/health/runs.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/health/test-definitions.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/hitl-proposals.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/inbox/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/inbox/messages.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/job-failures.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/mcp-logs.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/notifications/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/notifications/notifications.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/projects/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/projects/projects.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/research/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/research/library.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/settings/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/settings/notification-prefs.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/settings/preferences.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/settings/webhooks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/stats/activity-log.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/stats/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/stats/metrics-daily.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/attachments.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/comments.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/subtasks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/tasks.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/db/schemas/tasks/team-notes.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/email/inbound.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/health/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/lib/cookies.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/lib/crypto.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/utils/data.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/utils/health.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/backend/utils/secrets.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/AgentChat.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/AssistantModal.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/AssistantWorkspace.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/FollowUpSuggestions.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/ChartCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/index.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/InfoCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/MetricCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/MindMap.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/MindMapCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/TaskDraftCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/generative/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/MarkdownText.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/ModelPicker.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/runtime.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/Thread.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/ThreadList.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/threadListAdapter.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/tools/index.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/tools/MetricToolUI.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/tools/TaskDraftToolUI.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/assistant/tools/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ConfigSpaceManager.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/CopyButton.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/AdminDashboard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/AdminDashboardChrome.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/CategoryCharts.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/ChartCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/ChartsGrid.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/FilterBar.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/InsightsPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/RadialGauge.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/RecentActivity.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/SeedBanner.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/shared.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/StatCards.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/TimeSeriesCharts.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/dashboard/useDashboardData.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/DiagnosticsPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/docs/DocsAgentsSection.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/docs/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/Footer.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/FrontendErrorDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/Header.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/Icons.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/FolderNav.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/Inbox.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/MessageList.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/MessageView.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/states.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/inbox/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/MainNav.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/MobileNav.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/plate-plugins.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/plate-value.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/PlateEditor.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/PlateNodes.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/PlateRenderer.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/notes/PlateToolbar.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/NotificationsFeed.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/research/ResearchLibrary.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/ActivityTimeline.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/AdvancedPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/NotificationPrefsMatrix.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/PreferencesForm.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/SendTestNotification.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/SettingsNav.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/shared.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/settings/WebhooksTable.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/AgentThread.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/ApprovalGate.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/BrowserHitlPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/CodeModePanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/McpPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/McpToolCatalog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/McpToolUIs.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/MultiAgentPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/ScreenshotToolUI.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/shared.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/ShowcaseErrorBoundary.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/SkillsPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/SpotlightFeatures.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/SubAgentToolUI.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/ThinkingPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/ToolCallCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/UtilitiesDemo.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/WorkflowProgress.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/showcase/WorkflowsPanel.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/BadgeSelect.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/facet-options.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/FacetFilter.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/FilterSelect.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/NoteDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/PriorityBadge.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/ProgressCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/ProjectCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/ProjectDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/ProjectList.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/ProjectPreviewDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/sanitize-html.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/Shared.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/StatusBadge.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/SubtaskLinker.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/task-html.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskAttachments.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskBoard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskBreadcrumbs.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskCard.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskComments.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskDetail.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskDetailSidebar.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskFilters.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskList.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskPreviewDialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskRichEditor.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskRichHtml.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TaskSubtasks.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TeamAnalytics.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/TeamNotes.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/useProjects.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/tasks/useTaskFacets.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/TemplateLandingPage.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ThemeToggle.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/alert-dialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/avatar.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/badge.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/breadcrumb.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/button.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/card.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/chart.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/checkbox-group.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/checkbox.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/code-block.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/combobox.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/dialog.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/dropdown-menu.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/field.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/input-group.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/input.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/kbd.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/label.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/markdown-components.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/markdown.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/popover.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/progress.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/rich-text-composer.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/scroll-area.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/select.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/separator.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/skeleton.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/switch.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/table.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/tabs.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/textarea.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/components/ui/tooltip.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/api.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/config.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/data.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/error-handler.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/format.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/shiki.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/template-prompts.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/frontend/lib/utils.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/src/shared/data-utils.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/deep-research-companion/worker/worker-configuration.d.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/src/client/App.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/src/client/global.d.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/src/client/main.tsx",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/src/server/main.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "projects/workspace-admin/src/server/runtime-config.d.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/affected-projects.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/build-affected.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/build-all.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/build-project.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/deploy-affected.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/deploy-project.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/lib/appsscript-manifest.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/lib/projects.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/list-projects.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/new-project.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "scripts/validate-repo.mjs",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/agentic/AgentOrchestrator.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/agentic/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/agentic/KnowledgeCrystallizer.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/agentic/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/AiClient.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/PromptCatalog.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/ToolRegistry.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/ai/Types.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/AiGateway.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/CloudflareClient.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/CoreGsuiteToolsClient.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/D1.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/Images.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/Kv.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/Vectorize.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/cloudflare/WorkersAi.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/core/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/core/HttpClient.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/core/Json.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/core/Properties.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/core/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/calendar/createCalendarEventTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/calendar/searchCalendarEventsTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/docs/appendGoogleDocTextTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/docs/createGoogleDocTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/docs/getGoogleDocContentTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/drive/createTextDriveFileTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/drive/renameDriveFilesTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/drive/searchDriveFilesTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/forms/createQuizFormTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/forms/createSurveyFormTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/gmail/createGmailReplyDraftTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/gmail/downloadGmailAttachmentsTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/gmail/searchGmailMessagesTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/gmail/sendGmailMessageTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/index.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/sheets/appendSheetRowTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/sheets/getSheetValuesTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/sheets/putSheetValuesTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/tools/slides/createSlidesPresentationTool.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/AGENTS.md",
+      "action": "AGENTS.md Update",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/CalendarService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/DocsService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/DriveService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/FormsService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/GmailService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/README.md",
+      "action": "README Creation",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/SheetsService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/SidebarUiService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/SlidesService.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    },
+    {
+      "filePath": "shared/src/workspace/WebApp.ts",
+      "action": "JSDoc Addition",
+      "status": "pending"
+    }
+  ]
+}
